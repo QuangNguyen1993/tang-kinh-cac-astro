@@ -81,7 +81,29 @@ import BottomNav from "../components/BottomNav.astro";
         font-size: 15px;
         line-height: 1.55;
       }
+      .voice-card {
+        display: grid;
+        gap: 10px;
+      }
 
+      .voice-title {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 800;
+      }
+
+      .voice-sub {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .voice-player {
+        width: 100%;
+        margin-top: 4px;
+        border-radius: 12px;
+      }
       .card {
         background: var(--panel);
         border: 1px solid var(--soft);
@@ -248,7 +270,30 @@ import BottomNav from "../components/BottomNav.astro";
         color: var(--muted);
         font-size: 14px;
       }
+      .bank-info {
+        margin-top: 16px;
+        padding: 14px;
+        border-radius: 12px;
+        background: #11151c;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        display: grid;
+        gap: 8px;
+      }
 
+      .bank-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+      }
+
+      .bank-label {
+        color: var(--muted);
+      }
+
+      .bank-value {
+        font-weight: 600;
+        word-break: break-all;
+      }
       .qr-card {
         display: grid;
         gap: 14px;
@@ -535,7 +580,21 @@ import BottomNav from "../components/BottomNav.astro";
             </button>
           </div>
         </section>
+        <section class="card voice-card">
+          <h2 class="voice-title">Nghe thử giọng đọc</h2>
+          <p class="voice-sub">
+            Đạo hữu có thể nghe trước một đoạn mẫu để cảm nhận chất giọng trước
+            khi nâng cấp.
+          </p>
 
+          <audio class="voice-player" controls preload="none">
+            <source
+              src="https://pub-9a1dbcc796b846aa8ae1a85541dc3428.r2.dev/file_test.mp3"
+              type="audio/mpeg"
+            />
+            Trình duyệt của bạn không hỗ trợ phát audio.
+          </audio>
+        </section>
         <section class="card qr-card">
           <div class="qr-head">
             <div>
@@ -577,6 +636,28 @@ import BottomNav from "../components/BottomNav.astro";
                 Sao chép mã
               </button>
             </div>
+          </div>
+          <div class="bank-info">
+            <p class="payment-label">Chuyển khoản thủ công</p>
+
+            <div class="bank-row">
+              <span class="bank-label">Ngân hàng</span>
+              <span class="bank-value">MB Bank</span>
+            </div>
+
+            <div class="bank-row">
+              <span class="bank-label">Số tài khoản</span>
+              <span class="bank-value">0394246064</span>
+            </div>
+
+            <div class="bank-row">
+              <span class="bank-label">Chủ tài khoản</span>
+              <span class="bank-value">NGUYEN VINH QUANG</span>
+            </div>
+
+            <p class="qr-sub" style="margin-top:6px;">
+              Nội dung chuyển khoản: <b>mã thanh toán ở trên</b>
+            </p>
           </div>
         </section>
 
