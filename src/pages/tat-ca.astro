@@ -3,7 +3,7 @@ export const prerender = false;
 
 import BottomNav from "../components/BottomNav.astro";
 
-const API = "https://tan-an-api-v2.vinhquang19930-d93.workers.dev";
+const API = "https://api-beta.tananreview.com";
 
 const url = new URL(Astro.request.url);
 const section = (url.searchParams.get("section") || "").trim();
@@ -28,7 +28,7 @@ if (section === "hom-nay") {
 
     <link
       rel="preconnect"
-      href="https://tan-an-api-v2.vinhquang19930-d93.workers.dev"
+      href="https://api-beta.tananreview.com"
       crossorigin
     />
 
