@@ -1,0 +1,1444 @@
+---
+import BottomNav from "../../components/BottomNav.astro";
+import StatusBar from "../../components/StatusBar.astro";
+import TopBar from "../../components/TopBar.astro";
+
+export const prerender = false;
+
+const API = "https://tan-an-api-v2.vinhquang19930-d93.workers.dev";
+const { id } = Astro.params;
+---
+
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chi tiết truyện</title>
+
+    <link
+      rel="preconnect"
+      href="https://tan-an-api-v2.vinhquang19930-d93.workers.dev"
+      crossorigin
+    />
+
+    <style is:global>
+      :root {
+        --bg: #0f0f10;
+        --panel: #151515;
+        --panel-2: #121212;
+        --text: #f3f3f3;
+        --muted: #bdbdbd;
+        --soft: rgba(255, 255, 255, 0.08);
+        --softer: rgba(255, 255, 255, 0.04);
+        --accent: #f06a28;
+        --accent-soft: rgba(240, 106, 40, 0.14);
+        --danger-soft: rgba(255, 90, 90, 0.12);
+        --radius: 16px;
+        --container: 980px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Arial, sans-serif;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button,
+      input,
+      textarea,
+      select {
+        font: inherit;
+      }
+
+      .page {
+        width: min(100%, var(--container));
+        margin: 0 auto;
+        padding: 16px;
+        padding-bottom: 96px;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 116px 1fr;
+        gap: 14px;
+        align-items: start;
+        margin-bottom: 18px;
+        animation: fadeIn 0.28s ease-out;
+      }
+
+      .cover {
+        width: 100%;
+        object-fit: cover;
+        border-radius: 14px;
+        display: block;
+        background: #111;
+      }
+
+      .hero-meta {
+        min-width: 0;
+      }
+
+      .title {
+        margin: 0 0 10px;
+        font-size: 28px;
+        line-height: 1.15;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        background: var(--panel);
+        border: 1px solid var(--soft);
+        color: #e9e9e9;
+      }
+
+      .player-box {
+        background: var(--panel);
+        border: 1px solid var(--soft);
+        border-radius: var(--radius);
+        padding: 16px;
+        margin-bottom: 18px;
+        animation: fadeIn 0.28s ease-out;
+      }
+
+      .player-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .player-title-wrap {
+        min-width: 0;
+      }
+
+      .player-label {
+        margin: 0 0 6px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .player-title {
+        margin: 0;
+        font-size: 22px;
+        line-height: 1.2;
+        font-weight: 800;
+      }
+
+      .player-status {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.45;
+        min-height: 20px;
+      }
+
+      .audio-player {
+        width: 100%;
+        margin-top: 12px;
+      }
+
+      .hidden-player {
+        display: none;
+      }
+
+      .helper-box {
+        margin-top: 12px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: var(--panel-2);
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .access-card {
+        margin-top: 12px;
+        display: grid;
+        gap: 10px;
+        min-height: 170px;
+        background: #111214;
+        border: 1px solid var(--soft);
+        border-radius: var(--radius);
+        padding: 16px;
+      }
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        width: fit-content;
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.05);
+        transition: opacity 0.18s ease;
+      }
+
+      .status-badge.active {
+        background: var(--accent-soft);
+        color: #ffcfb4;
+      }
+
+      .status-badge.expired {
+        background: rgba(255, 255, 255, 0.05);
+        color: #ffd6c2;
+      }
+
+      .status-badge.blocked {
+        background: var(--danger-soft);
+        color: #ffc0c0;
+      }
+
+      .status-badge.guest {
+        background: rgba(255, 255, 255, 0.05);
+        color: #ddd;
+      }
+
+      .status-badge.loading {
+        background: rgba(255, 255, 255, 0.05);
+        color: #ddd;
+      }
+
+      .status-badge.error {
+        background: rgba(255, 255, 255, 0.05);
+        color: #ffd6c2;
+      }
+
+      .status-main {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        min-height: 24px;
+      }
+
+      .status-sub {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.55;
+        min-height: 44px;
+      }
+
+      .status-actions {
+        display: grid;
+        gap: 10px;
+      }
+
+      .login-btn,
+      .refresh-btn,
+      .support-btn,
+      .upgrade-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: 12px;
+        cursor: pointer;
+        min-height: 46px;
+        padding: 0 16px;
+        font-weight: 700;
+      }
+
+      .login-btn,
+      .upgrade-btn {
+        width: 100%;
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .refresh-btn,
+      .support-btn {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.05);
+        color: #fff;
+      }
+
+      .section-title {
+        margin: 0 0 12px;
+        font-size: 22px;
+        font-weight: 800;
+      }
+
+      .episode-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .episode-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px;
+        border-radius: 14px;
+        background: var(--panel);
+        border: 1px solid var(--soft);
+        transition:
+          border-color 0.15s ease,
+          background 0.15s ease,
+          opacity 0.15s ease;
+      }
+
+      .episode-item.active {
+        border-color: rgba(240, 106, 40, 0.75);
+        box-shadow: inset 0 0 0 1px rgba(240, 106, 40, 0.22);
+        background: linear-gradient(
+          180deg,
+          rgba(240, 106, 40, 0.08) 0%,
+          rgba(240, 106, 40, 0.03) 100%
+        );
+      }
+
+      .episode-item.locked {
+        opacity: 0.92;
+      }
+
+      .episode-left {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .episode-name {
+        margin: 0 0 8px;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 1.3;
+      }
+
+      .episode-sub {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        background: #232323;
+        color: var(--muted);
+        border: 1px solid var(--soft);
+      }
+
+      .badge.active {
+        background: rgba(240, 106, 40, 0.18);
+        color: #ffd7c5;
+        border-color: rgba(240, 106, 40, 0.55);
+      }
+
+      .episode-btn {
+        flex-shrink: 0;
+        min-width: 96px;
+        height: 42px;
+        padding: 0 16px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--accent);
+        color: #fff;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .episode-btn.secondary {
+        background: #2a2a2a;
+        color: #f3f3f3;
+      }
+
+      .episode-btn:disabled,
+      .episode-btn.is-disabled {
+        background: #2a2a2a;
+        color: #a9a9a9;
+        cursor: not-allowed;
+      }
+
+      .empty-box,
+      .error-box {
+        padding: 16px;
+        border-radius: 14px;
+        background: var(--panel);
+        border: 1px solid var(--soft);
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .error-box {
+        color: #ffb28d;
+      }
+
+      .retry-btn {
+        margin-top: 12px;
+        min-height: 42px;
+        padding: 0 16px;
+        border: 0;
+        border-radius: 999px;
+        background: var(--accent);
+        color: #fff;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .foot-note {
+        margin-top: 16px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .episode-skeleton-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .episode-skeleton {
+        height: 78px;
+        border-radius: 14px;
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.04) 0%,
+          rgba(255, 255, 255, 0.08) 50%,
+          rgba(255, 255, 255, 0.04) 100%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.4s infinite linear;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @keyframes shimmer {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0.72;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @media (max-width: 640px) {
+        .title {
+          font-size: 24px;
+        }
+
+        .player-title {
+          font-size: 20px;
+        }
+
+        .episode-name {
+          font-size: 17px;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .hero {
+          grid-template-columns: 92px 1fr;
+        }
+
+        .episode-item {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .episode-btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <TopBar title="Tàng Kinh Các" api={API} profileHref="/upgrade" />
+    <StatusBar api={API} upgradeHref="/upgrade" />
+
+    <main class="page">
+      <div id="errorBox" class="error-box hidden">
+        Không thể tải dữ liệu truyện lúc này. Vui lòng thử lại sau.
+        <div>
+          <button id="retryPageBtn" class="retry-btn" type="button"
+            >Thử lại</button
+          >
+        </div>
+      </div>
+
+      <div id="emptyBox" class="empty-box hidden">
+        Không tìm thấy bộ truyện này.
+      </div>
+
+      <div id="content">
+        <section class="hero">
+          <img
+            id="cover"
+            class="cover"
+            src="/fallback.webp"
+            alt=""
+            loading="eager"
+          />
+
+          <div class="hero-meta">
+            <h1 id="title" class="title">Đang tải truyện...</h1>
+            <div id="tags" class="tags">
+              <span class="tag">Đang tải</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="player-box">
+          <div class="player-head">
+            <div class="player-title-wrap">
+              <p class="player-label">Đang phát</p>
+              <h2 id="currentTapTitle" class="player-title">Chưa chọn tập</h2>
+            </div>
+          </div>
+
+          <p id="playerStatus" class="player-status">
+            Đang kiểm tra quyền nghe...
+          </p>
+
+          <section id="accessCard" class="access-card hidden">
+            <div id="accessBadge" class="status-badge loading">
+              Đang kiểm tra
+            </div>
+            <p id="accessMain" class="status-main">
+              Đang kiểm tra trạng thái tài khoản của đạo hữu...
+            </p>
+            <p id="accessSub" class="status-sub">
+              Hệ thống đang xác minh đăng nhập và thời hạn truy cập trước khi
+              phát audio.
+            </p>
+
+            <div id="accessActions" class="status-actions">
+              <a
+                id="loginBtn"
+                class="login-btn hidden"
+                href={`${API}/auth/google/start`}
+              >
+                Đăng nhập bằng Google
+              </a>
+
+              <a id="upgradeBtn" class="upgrade-btn hidden" href="/upgrade">
+                Nâng cấp tu vi
+              </a>
+
+              <a
+                id="supportBtn"
+                class="support-btn hidden"
+                href="mailto:tongmon.tanan@outlook.com.vn"
+              >
+                Liên hệ hỗ trợ
+              </a>
+
+              <button
+                id="refreshAccessBtn"
+                type="button"
+                class="refresh-btn hidden"
+              >
+                Kiểm tra lại trạng thái
+              </button>
+            </div>
+          </section>
+
+          <audio
+            id="player"
+            class="audio-player hidden-player"
+            controls
+            controlsList="nodownload"
+            preload="metadata"
+            oncontextmenu="return false;"></audio>
+
+          <div class="helper-box">
+            Tiến độ nghe sẽ được lưu trên thiết bị này khi đạo hữu tạm dừng, tua
+            hoặc rời khỏi trang. Lần sau quay lại, hệ thống sẽ phát tiếp gần
+            đúng vị trí đã nghe.
+          </div>
+        </section>
+
+        <section>
+          <h2 class="section-title">Danh sách tập</h2>
+
+          <div id="episodeLoading" class="episode-skeleton-list">
+            <div class="episode-skeleton"></div>
+            <div class="episode-skeleton"></div>
+            <div class="episode-skeleton"></div>
+          </div>
+
+          <div id="episodeList" class="episode-list hidden"></div>
+
+          <div id="emptyEpisode" class="empty-box hidden">
+            Bộ truyện này hiện chưa có tập nào.
+          </div>
+
+          <p class="foot-note">
+            Nếu audio không phát được, đạo hữu hãy kiểm tra đăng nhập và trạng
+            thái gói truy cập. Tiến độ nghe hiện chỉ lưu trên trình duyệt và
+            thiết bị đang dùng.
+          </p>
+        </section>
+      </div>
+    </main>
+
+    <script define:vars={{ API, maTruyen: id }}>
+      const HOME_CACHE_KEY = "tkc_truyen_cache_v2";
+
+      const errorBox = document.getElementById("errorBox");
+      const emptyBox = document.getElementById("emptyBox");
+      const contentBox = document.getElementById("content");
+      const retryPageBtn = document.getElementById("retryPageBtn");
+
+      const coverEl = document.getElementById("cover");
+      const titleEl = document.getElementById("title");
+      const tagsEl = document.getElementById("tags");
+
+      const episodeLoadingEl = document.getElementById("episodeLoading");
+      const episodeListEl = document.getElementById("episodeList");
+      const emptyEpisodeEl = document.getElementById("emptyEpisode");
+
+      const player = document.getElementById("player");
+      const currentTapTitle = document.getElementById("currentTapTitle");
+      const playerStatus = document.getElementById("playerStatus");
+
+      const accessCard = document.getElementById("accessCard");
+      const accessBadge = document.getElementById("accessBadge");
+      const accessMain = document.getElementById("accessMain");
+      const accessSub = document.getElementById("accessSub");
+      const loginBtn = document.getElementById("loginBtn");
+      const upgradeBtn = document.getElementById("upgradeBtn");
+      const supportBtn = document.getElementById("supportBtn");
+      const refreshAccessBtn = document.getElementById("refreshAccessBtn");
+
+      let currentUserId = "guest";
+      let currentMaTap = null;
+      let currentTenTap = null;
+      let saveTimer = null;
+      let pendingResumeTime = null;
+
+      let buttons = [];
+      let episodeItems = [];
+
+      let accessState = {
+        kind: "loading",
+        canPlay: false,
+        expiredAt: null,
+      };
+
+      function setPageState(state) {
+        errorBox.classList.toggle("hidden", state !== "error");
+        emptyBox.classList.toggle("hidden", state !== "empty");
+        contentBox.classList.toggle(
+          "hidden",
+          state === "error" || state === "empty",
+        );
+      }
+
+      function setEpisodeState(state) {
+        episodeLoadingEl.classList.toggle("hidden", state !== "loading");
+        episodeListEl.classList.toggle("hidden", state !== "list");
+        emptyEpisodeEl.classList.toggle("hidden", state !== "empty");
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+      }
+
+      function formatTime(seconds) {
+        const total = Math.max(0, Math.floor(Number(seconds) || 0));
+        const mins = Math.floor(total / 60);
+        const secs = total % 60;
+        return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+      }
+
+      function formatDateVN(dateStr) {
+        const d = new Date(dateStr);
+        if (Number.isNaN(d.getTime())) return "";
+        return d.toLocaleDateString("vi-VN");
+      }
+
+      function showStatus(text) {
+        playerStatus.textContent = text || "";
+      }
+
+      function getVNDateKey(dateInput = Date.now()) {
+        const d = new Date(dateInput);
+        const VN_OFFSET_MS = 7 * 60 * 60 * 1000;
+        const vn = new Date(d.getTime() + VN_OFFSET_MS);
+
+        const y = vn.getUTCFullYear();
+        const m = vn.getUTCMonth() + 1;
+        const day = vn.getUTCDate();
+
+        return y * 10000 + m * 100 + day;
+      }
+
+      function isUserActiveByVNDate(expiredAtValue) {
+        if (!expiredAtValue) return false;
+
+        const exp = new Date(expiredAtValue);
+        if (Number.isNaN(exp.getTime())) return false;
+
+        const todayKey = getVNDateKey(Date.now());
+        const expKey = getVNDateKey(expiredAtValue);
+
+        return todayKey <= expKey;
+      }
+
+      function isPlayAllowed() {
+        return accessState?.canPlay === true;
+      }
+
+      function resetPlayerForLockedState() {
+        try {
+          player.pause();
+        } catch {}
+
+        player.classList.add("hidden-player");
+        player.removeAttribute("src");
+        player.load();
+
+        currentMaTap = null;
+        currentTenTap = null;
+        pendingResumeTime = null;
+        currentTapTitle.textContent = "Chưa chọn tập";
+      }
+
+      function setAccessUI(type, badgeText, mainText, subText) {
+        accessBadge.className = `status-badge ${type}`;
+        accessBadge.textContent = badgeText;
+        accessMain.textContent = mainText;
+        accessSub.textContent = subText;
+
+        loginBtn.classList.add("hidden");
+        upgradeBtn.classList.add("hidden");
+        supportBtn.classList.add("hidden");
+        refreshAccessBtn.classList.add("hidden");
+      }
+
+      function applyAccessState() {
+        accessCard.classList.remove("hidden");
+
+        if (accessState.kind === "loading") {
+          setAccessUI(
+            "loading",
+            "Đang kiểm tra",
+            "Đang kiểm tra trạng thái tài khoản của đạo hữu...",
+            "Hệ thống đang xác minh đăng nhập và thời hạn truy cập trước khi phát audio.",
+          );
+          resetPlayerForLockedState();
+          showStatus("Đang kiểm tra quyền nghe...");
+          return;
+        }
+
+        if (accessState.kind === "guest") {
+          setAccessUI(
+            "guest",
+            "Chưa đăng nhập",
+            "Đăng nhập để bắt đầu nghe truyện.",
+            "Tài khoản Google của đạo hữu sẽ được dùng để kiểm tra quyền nghe và trạng thái gói truy cập.",
+          );
+          loginBtn.classList.remove("hidden");
+          resetPlayerForLockedState();
+          showStatus("Đăng nhập để bắt đầu nghe truyện.");
+          return;
+        }
+
+        if (accessState.kind === "blocked") {
+          setAccessUI(
+            "blocked",
+            "Tài khoản bị khóa",
+            "Tài khoản hiện đang bị khóa.",
+            "Bạn không thể nghe truyện ở thời điểm này. Vui lòng liên hệ hỗ trợ.",
+          );
+          supportBtn.classList.remove("hidden");
+          resetPlayerForLockedState();
+          showStatus("Tài khoản hiện đang bị khóa.");
+          return;
+        }
+
+        if (accessState.kind === "expired") {
+          setAccessUI(
+            "expired",
+            "Đã hết hạn",
+            "Đạo hữu đã hết hạn truy cập.",
+            "Chọn gói phù hợp để tiếp tục nghe công pháp trong Tàng Kinh Các.",
+          );
+          upgradeBtn.classList.remove("hidden");
+          refreshAccessBtn.classList.remove("hidden");
+          resetPlayerForLockedState();
+          showStatus("Gói hiện tại đã hết hạn.");
+          return;
+        }
+
+        if (accessState.kind === "error") {
+          setAccessUI(
+            "error",
+            "Không kiểm tra được",
+            "Không thể kiểm tra trạng thái tài khoản.",
+            "Vui lòng thử lại sau ít phút hoặc kiểm tra lại kết nối mạng.",
+          );
+          refreshAccessBtn.classList.remove("hidden");
+          resetPlayerForLockedState();
+          showStatus("Không thể kiểm tra quyền nghe lúc này.");
+          return;
+        }
+
+        if (accessState.kind === "active") {
+          accessCard.classList.add("hidden");
+          player.classList.remove("hidden-player");
+
+          if (!currentMaTap) {
+            showStatus(
+              `Đạo hữu đang có quyền truy cập đến ${formatDateVN(accessState.expiredAt)}.`,
+            );
+          }
+        }
+      }
+
+      function applyPlayLockUI() {
+        const canPlay = isPlayAllowed();
+
+        episodeItems.forEach((item) => {
+          item.classList.toggle("locked", !canPlay);
+        });
+
+        buttons.forEach((btn) => {
+          if (canPlay) {
+            btn.disabled = false;
+            btn.classList.remove("is-disabled");
+            btn.removeAttribute("aria-disabled");
+
+            if (!btn.classList.contains("secondary")) {
+              btn.textContent = "Phát";
+            }
+            return;
+          }
+
+          // Riêng nhánh error: cho bấm để thử load lại trạng thái
+          if (accessState.kind === "error") {
+            btn.disabled = false;
+            btn.classList.remove("is-disabled");
+            btn.removeAttribute("aria-disabled");
+            btn.textContent = "Thử lại";
+            return;
+          }
+
+          // Các nhánh còn lại thì khóa cứng
+          btn.disabled = true;
+          btn.classList.add("is-disabled");
+          btn.setAttribute("aria-disabled", "true");
+
+          if (accessState.kind === "guest") {
+            btn.textContent = "Đăng nhập";
+          } else if (accessState.kind === "blocked") {
+            btn.textContent = "Đã khóa";
+          } else if (accessState.kind === "expired") {
+            btn.textContent = "Hết hạn";
+          } else {
+            btn.textContent = "Khóa";
+          }
+        });
+      }
+
+      function deriveAccessState(me) {
+        const user = me?.user || null;
+
+        if (!user) {
+          currentUserId = "guest";
+          return {
+            kind: "guest",
+            canPlay: false,
+            expiredAt: null,
+          };
+        }
+
+        currentUserId = user.user_id || "guest";
+
+        if (Number(user.is_blocked) === 1) {
+          return {
+            kind: "blocked",
+            canPlay: false,
+            expiredAt: user.expired_at || null,
+          };
+        }
+
+        if (!isUserActiveByVNDate(user.expired_at)) {
+          return {
+            kind: "expired",
+            canPlay: false,
+            expiredAt: user.expired_at || null,
+          };
+        }
+
+        return {
+          kind: "active",
+          canPlay: true,
+          expiredAt: user.expired_at,
+        };
+      }
+
+      function getProgressKey(maTap) {
+        return `tangkinhcac_progress_${currentUserId}_${maTruyen}_${maTap}`;
+      }
+
+      function getLastTrackKey() {
+        return `tangkinhcac_last_track_${currentUserId}_${maTruyen}`;
+      }
+
+      function readProgress(maTap) {
+        try {
+          const raw = localStorage.getItem(getProgressKey(maTap));
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== "object") return null;
+          return parsed;
+        } catch {
+          return null;
+        }
+      }
+
+      function clearProgress(maTap) {
+        try {
+          localStorage.removeItem(getProgressKey(maTap));
+        } catch {}
+      }
+
+      function writeProgress(maTap, tenTap, currentTime, duration) {
+        try {
+          const safeCurrent = Number(currentTime || 0);
+          const safeDuration = Number(duration || 0);
+
+          if (
+            Number.isFinite(safeDuration) &&
+            safeDuration > 0 &&
+            safeCurrent >= safeDuration - 10
+          ) {
+            clearProgress(maTap);
+            localStorage.setItem(
+              getLastTrackKey(),
+              JSON.stringify({
+                ma_tap: maTap,
+                ten_tap: tenTap,
+                updated_at: Date.now(),
+                finished: true,
+              }),
+            );
+            return;
+          }
+
+          localStorage.setItem(
+            getProgressKey(maTap),
+            JSON.stringify({
+              ma_tap: maTap,
+              ten_tap: tenTap,
+              current_time: safeCurrent,
+              duration: safeDuration,
+              updated_at: Date.now(),
+            }),
+          );
+
+          localStorage.setItem(
+            getLastTrackKey(),
+            JSON.stringify({
+              ma_tap: maTap,
+              ten_tap: tenTap,
+              updated_at: Date.now(),
+              finished: false,
+            }),
+          );
+        } catch {}
+      }
+
+      function updateProgressBadges() {
+        let lastTrack = null;
+
+        try {
+          const raw = localStorage.getItem(getLastTrackKey());
+          if (raw) lastTrack = JSON.parse(raw);
+        } catch {}
+
+        document.querySelectorAll("[data-progress-badge]").forEach((el) => {
+          const maTap = el.getAttribute("data-progress-badge");
+          const progress = readProgress(maTap);
+
+          if (progress && Number(progress.current_time) > 5) {
+            el.textContent = `Nghe tiếp ${formatTime(progress.current_time)}`;
+            return;
+          }
+
+          if (lastTrack?.ma_tap === maTap && lastTrack?.finished) {
+            el.textContent = "Đã nghe xong";
+            return;
+          }
+
+          el.textContent = "Chưa nghe";
+        });
+      }
+
+      function updateActiveUI(maTap) {
+        episodeItems.forEach((item) => {
+          const itemTap = item.getAttribute("data-ma-tap");
+          item.classList.toggle("active", itemTap === maTap);
+        });
+
+        document.querySelectorAll("[data-active-badge]").forEach((badge) => {
+          const badgeTap = badge.getAttribute("data-active-badge");
+          badge.style.display = badgeTap === maTap ? "inline-flex" : "none";
+        });
+
+        buttons.forEach((btn) => {
+          const btnTap = btn.getAttribute("data-ma-tap");
+          const isActive = btnTap === maTap;
+          btn.classList.toggle("secondary", isActive);
+
+          if (isPlayAllowed()) {
+            btn.textContent = isActive ? "Đang phát" : "Phát";
+          }
+        });
+      }
+
+      function resetActiveUI() {
+        episodeItems.forEach((item) => item.classList.remove("active"));
+
+        document.querySelectorAll("[data-active-badge]").forEach((badge) => {
+          badge.style.display = "none";
+        });
+
+        buttons.forEach((btn) => {
+          btn.classList.remove("secondary");
+        });
+
+        applyPlayLockUI();
+      }
+
+      function saveCurrentProgress() {
+        if (!isPlayAllowed()) return;
+        if (!currentMaTap || !player) return;
+        if (!Number.isFinite(player.currentTime)) return;
+
+        writeProgress(
+          currentMaTap,
+          currentTenTap,
+          player.currentTime,
+          player.duration,
+        );
+        updateProgressBadges();
+      }
+
+      function bindEpisodeEvents() {
+        buttons.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            if (!isPlayAllowed()) {
+              if (accessState.kind === "error") {
+                loadAccessState();
+              }
+              return;
+            }
+
+            const maTap = btn.getAttribute("data-ma-tap");
+            const tenTap = btn.getAttribute("data-ten-tap");
+            if (!maTap) return;
+            playTap(maTap, tenTap || maTap);
+          });
+        });
+      }
+
+      function restoreLastTrackUI() {
+        if (!isPlayAllowed()) return;
+
+        try {
+          const lastRaw = localStorage.getItem(getLastTrackKey());
+          if (!lastRaw) return;
+
+          const last = JSON.parse(lastRaw);
+          if (!last?.ma_tap) return;
+
+          const targetBtn = document.querySelector(
+            `[data-ma-tap="${last.ma_tap}"][data-ten-tap]`,
+          );
+
+          if (!targetBtn) return;
+
+          const tenTap = targetBtn.getAttribute("data-ten-tap") || last.ma_tap;
+          currentTapTitle.textContent = tenTap;
+
+          showStatus(
+            last.finished
+              ? "Đạo hữu đã nghe xong tập gần nhất."
+              : "Đạo hữu có thể tiếp tục từ vị trí đã nghe trước đó.",
+          );
+        } catch {}
+      }
+
+      function renderCachedHero() {
+        try {
+          const raw = localStorage.getItem(HOME_CACHE_KEY);
+          if (!raw) return false;
+
+          const parsed = JSON.parse(raw);
+          const items = Array.isArray(parsed?.items) ? parsed.items : [];
+          const truyen = items.find((i) => i?.ma_truyen === maTruyen);
+
+          if (!truyen) return false;
+
+          coverEl.src = truyen.anh_bia || "/fallback.webp";
+          coverEl.alt = truyen.ten_truyen || "Ảnh bìa truyện";
+          coverEl.onerror = function () {
+            this.onerror = null;
+            this.src = "/fallback.webp";
+          };
+
+          titleEl.textContent = truyen.ten_truyen || "Chi tiết truyện";
+          document.title = truyen.ten_truyen || "Chi tiết truyện";
+
+          tagsEl.innerHTML = `
+        ${(truyen.the_loai || "").trim() ? `<span class="tag">${escapeHtml(truyen.the_loai)}</span>` : ""}
+        ${Number(truyen.is_hot) === 1 ? `<span class="tag">Công pháp nổi bật</span>` : ""}
+        <span class="tag">Đang tải tập</span>
+      `;
+
+          setPageState("content");
+          return true;
+        } catch {
+          return false;
+        }
+      }
+
+      function renderEpisodeList(items) {
+        if (!items || items.length === 0) {
+          episodeListEl.innerHTML = "";
+          buttons = [];
+          episodeItems = [];
+          setEpisodeState("empty");
+          return;
+        }
+
+        const html = items
+          .map(
+            (tap) => `
+          <div class="episode-item" data-episode-item data-ma-tap="${escapeHtml(tap.ma_tap)}">
+            <div class="episode-left">
+              <p class="episode-name">${escapeHtml(tap.ten_tap)}</p>
+              <div class="episode-sub">
+                <span class="badge" data-progress-badge="${escapeHtml(tap.ma_tap)}">
+                  Chưa nghe
+                </span>
+                <span
+                  class="badge active"
+                  data-active-badge="${escapeHtml(tap.ma_tap)}"
+                  style="display:none;"
+                >
+                  Đang nghe
+                </span>
+              </div>
+            </div>
+
+            <button
+              class="episode-btn"
+              type="button"
+              data-ma-tap="${escapeHtml(tap.ma_tap)}"
+              data-ten-tap="${escapeHtml(tap.ten_tap)}"
+            >
+              Phát
+            </button>
+          </div>
+        `,
+          )
+          .join("");
+
+        episodeListEl.innerHTML = html;
+        buttons = Array.from(
+          document.querySelectorAll("[data-ma-tap][data-ten-tap]"),
+        );
+        episodeItems = Array.from(
+          document.querySelectorAll("[data-episode-item]"),
+        );
+
+        bindEpisodeEvents();
+        updateProgressBadges();
+        applyPlayLockUI();
+
+        if (isPlayAllowed()) {
+          restoreLastTrackUI();
+        } else {
+          currentTapTitle.textContent = "Chưa chọn tập";
+        }
+
+        setEpisodeState("list");
+      }
+
+      function renderPage(data) {
+        if (!data?.truyen) {
+          setPageState("empty");
+          return;
+        }
+
+        setPageState("content");
+
+        coverEl.src = data.truyen.anh_bia || "/fallback.webp";
+        coverEl.alt = data.truyen.ten_truyen || "Ảnh bìa truyện";
+        coverEl.onerror = function () {
+          this.onerror = null;
+          this.src = "/fallback.webp";
+        };
+
+        titleEl.textContent = data.truyen.ten_truyen || "Chi tiết truyện";
+        document.title = data.truyen.ten_truyen || "Chi tiết truyện";
+
+        tagsEl.innerHTML = `
+      ${(data.truyen.the_loai || "").trim() ? `<span class="tag">${escapeHtml(data.truyen.the_loai)}</span>` : ""}
+      ${Number(data.truyen.is_hot) === 1 ? `<span class="tag">Công pháp nổi bật</span>` : ""}
+      <span class="tag">${data.items?.length || 0} tập</span>
+    `;
+
+        renderEpisodeList(data.items || []);
+      }
+
+      async function playTap(maTap, tenTap) {
+        if (!isPlayAllowed()) return;
+
+        player.pause();
+
+        currentMaTap = maTap;
+        currentTenTap = tenTap;
+
+        currentTapTitle.textContent = tenTap || maTap;
+        showStatus(`Đang chuẩn bị phát ${tenTap || maTap}...`);
+        updateActiveUI(maTap);
+
+        const saved = readProgress(maTap);
+        pendingResumeTime =
+          saved && Number(saved.current_time) > 5
+            ? Number(saved.current_time)
+            : null;
+
+        const audioUrl = `${API}/play?ma_tap=${encodeURIComponent(maTap)}`;
+
+        if (player.src !== audioUrl) {
+          player.src = audioUrl;
+          player.load();
+        }
+
+        try {
+          await player.play();
+        } catch {
+          showStatus(
+            "Không thể phát audio lúc này. Vui lòng kiểm tra lại trạng thái truy cập.",
+          );
+        }
+      }
+
+      async function loadAccessState() {
+        accessState = {
+          kind: "loading",
+          canPlay: false,
+          expiredAt: null,
+        };
+        applyAccessState();
+        applyPlayLockUI();
+
+        try {
+          const res = await fetch(`${API}/me`, {
+            credentials: "include",
+            cache: "no-store",
+            headers: {
+              Accept: "application/json",
+            },
+          });
+
+          if (res.status === 401 || res.status === 403) {
+            accessState = {
+              kind: "guest",
+              canPlay: false,
+              expiredAt: null,
+            };
+          } else if (!res.ok) {
+            throw new Error(
+              `Không lấy được trạng thái tài khoản: ${res.status}`,
+            );
+          } else {
+            const data = await res.json();
+            accessState = deriveAccessState(data);
+          }
+        } catch (e) {
+          console.error("load /me error:", e);
+          accessState = {
+            kind: "error",
+            canPlay: false,
+            expiredAt: null,
+          };
+        }
+
+        applyAccessState();
+        applyPlayLockUI();
+
+        if (isPlayAllowed()) {
+          updateProgressBadges();
+          restoreLastTrackUI();
+        } else {
+          resetActiveUI();
+        }
+      }
+
+      async function loadPage() {
+        renderCachedHero();
+        setEpisodeState("loading");
+        setPageState("content");
+
+        try {
+          const res = await fetch(
+            `${API}/tap?ma_truyen=${encodeURIComponent(maTruyen)}`,
+            {
+              credentials: "include",
+            },
+          );
+
+          if (!res.ok) {
+            throw new Error("Không lấy được dữ liệu truyện");
+          }
+
+          const data = await res.json();
+          renderPage(data);
+        } catch (e) {
+          console.error("Lỗi tải trang:", e);
+          setPageState("error");
+        }
+      }
+
+      player.addEventListener("loadedmetadata", () => {
+        if (!isPlayAllowed()) return;
+
+        if (
+          pendingResumeTime !== null &&
+          Number.isFinite(player.duration) &&
+          pendingResumeTime < Math.max(0, player.duration - 3)
+        ) {
+          player.currentTime = pendingResumeTime;
+          showStatus(
+            `Đã khôi phục tiến độ tại ${formatTime(pendingResumeTime)}.`,
+          );
+        } else if (pendingResumeTime !== null) {
+          showStatus("Tiến độ cũ gần cuối tập nên hệ thống phát từ đầu.");
+        } else {
+          showStatus("Audio đã sẵn sàng.");
+        }
+
+        pendingResumeTime = null;
+      });
+
+      player.addEventListener("playing", () => {
+        if (!isPlayAllowed()) return;
+        showStatus("Đang phát audio...");
+      });
+
+      player.addEventListener("pause", () => {
+        if (!isPlayAllowed()) return;
+        saveCurrentProgress();
+        if (currentMaTap) {
+          showStatus(`Đã lưu tiến độ ${formatTime(player.currentTime)}.`);
+        }
+      });
+
+      player.addEventListener("waiting", () => {
+        if (!isPlayAllowed()) return;
+        showStatus("Đang tải dữ liệu audio...");
+      });
+
+      player.addEventListener("ended", () => {
+        if (!isPlayAllowed()) return;
+
+        if (currentMaTap) {
+          writeProgress(
+            currentMaTap,
+            currentTenTap,
+            player.duration,
+            player.duration,
+          );
+          updateProgressBadges();
+        }
+        showStatus("Đã phát xong tập này.");
+      });
+
+      player.addEventListener("error", () => {
+        if (!isPlayAllowed()) return;
+        showStatus("Không phát được audio. Vui lòng thử lại sau.");
+      });
+
+      player.addEventListener("timeupdate", () => {
+        if (!isPlayAllowed()) return;
+        if (!currentMaTap) return;
+
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(() => {
+          saveCurrentProgress();
+        }, 2000);
+      });
+
+      window.addEventListener("beforeunload", saveCurrentProgress);
+      window.addEventListener("pagehide", saveCurrentProgress);
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) saveCurrentProgress();
+      });
+
+      retryPageBtn?.addEventListener("click", () => {
+        loadPage();
+      });
+
+      refreshAccessBtn?.addEventListener("click", () => {
+        loadAccessState();
+      });
+
+      Promise.allSettled([loadAccessState(), loadPage()]);
+    </script>
+
+    <BottomNav current="/" />
+  </body>
+</html>

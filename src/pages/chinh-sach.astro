@@ -1,0 +1,99 @@
+---
+import TopBar from "../components/TopBar.astro";
+import BottomNav from "../components/BottomNav.astro";
+
+const API = "https://tan-an-api-v2.vinhquang19930-d93.workers.dev";
+---
+
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chính Sách Quyền Riêng Tư</title>
+
+    <style>
+      body {
+        margin: 0;
+        background: #0f0f10;
+        color: #f3f3f3;
+        font-family: Arial, sans-serif;
+      }
+
+      .page {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px 16px 100px;
+      }
+
+      h1 {
+        font-size: 26px;
+        margin-bottom: 12px;
+      }
+
+      h2 {
+        font-size: 18px;
+        margin-top: 24px;
+        margin-bottom: 8px;
+        color: #f06a28;
+      }
+
+      p,
+      li {
+        font-size: 14px;
+        line-height: 1.7;
+        color: #cfcfcf;
+      }
+
+      ul {
+        padding-left: 18px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <TopBar title="Chính Sách" api={API} />
+
+    <main class="page">
+      <h1>Chính Sách Quyền Riêng Tư</h1>
+
+      <h2>1. Thu thập thông tin</h2>
+      <ul>
+        <li>Email đăng nhập Google</li>
+        <li>Member code (mã hội viên)</li>
+        <li>Trạng thái gói và thời hạn</li>
+      </ul>
+
+      <p>Hệ thống không yêu cầu thông tin nhạy cảm.</p>
+
+      <h2>2. Mục đích sử dụng</h2>
+      <ul>
+        <li>Xác thực đăng nhập</li>
+        <li>Cấp quyền truy cập</li>
+        <li>Hỗ trợ kỹ thuật</li>
+      </ul>
+
+      <h2>3. Lưu trữ & bảo mật</h2>
+      <p>
+        Dữ liệu được lưu trữ trên hạ tầng vận hành hệ thống. Áp dụng các biện
+        pháp bảo mật nhằm hạn chế truy cập trái phép.
+      </p>
+
+      <h2>4. Chia sẻ thông tin</h2>
+      <p>
+        Không bán hoặc chia sẻ dữ liệu cho bên thứ ba, trừ dịch vụ kỹ thuật cần
+        thiết.
+      </p>
+
+      <h2>5. Thay đổi chính sách</h2>
+      <p>
+        Chính sách có thể được cập nhật theo nhu cầu vận hành. Tiếp tục sử dụng
+        đồng nghĩa với chấp nhận thay đổi.
+      </p>
+
+      <h2>6. Liên hệ</h2>
+      <p>Email: <b>tongmon.tanan@outlook.com.vn</b></p>
+    </main>
+
+    <BottomNav />
+  </body>
+</html>

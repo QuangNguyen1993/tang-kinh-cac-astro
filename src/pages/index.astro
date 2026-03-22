@@ -1,0 +1,622 @@
+---
+const API = "https://tan-an-api-v2.vinhquang19930-d93.workers.dev";
+
+import BottomNav from "../components/BottomNav.astro";
+import StatusBar from "../components/StatusBar.astro";
+import TopBar from "../components/TopBar.astro";
+---
+
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tàng Kinh Các</title>
+
+    <link
+      rel="preconnect"
+      href="https://tan-an-api-v2.vinhquang19930-d93.workers.dev"
+      crossorigin
+    />
+    <link rel="preconnect" href="https://qr.sepay.vn" crossorigin />
+    <link rel="dns-prefetch" href="https://qr.sepay.vn" />
+
+    <style is:global>
+      :root {
+        --bg: #0f0f10;
+        --text: #f3f3f3;
+        --muted: #bdbdbd;
+        --softer: rgba(255, 255, 255, 0.04);
+        --accent: #f06a28;
+        --card-radius: 14px;
+        --container: 1280px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Arial, sans-serif;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .content {
+        width: min(100%, var(--container));
+        margin: 0 auto;
+        padding: 16px;
+        padding-bottom: 96px;
+      }
+
+      .section {
+        margin-bottom: 30px;
+      }
+
+      .section + .section {
+        padding-top: 22px;
+        border-top: 1px solid var(--softer);
+      }
+
+      .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .section-title {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 22px;
+        line-height: 1.2;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+      }
+
+      .section-title.subtle {
+        color: #e9e9e9;
+        font-weight: 750;
+      }
+
+      .section-icon {
+        font-size: 18px;
+        color: var(--accent);
+        line-height: 1;
+      }
+
+      .see-all {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        background: var(--accent);
+        color: #fff;
+        padding: 9px 14px;
+        border-radius: 999px;
+        font-size: 14px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .see-all.minimal {
+        background: transparent;
+        color: var(--accent);
+        padding: 0;
+        border-radius: 0;
+      }
+
+      .grid-two {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .story-card {
+        display: block;
+        border-radius: var(--card-radius);
+        overflow: hidden;
+        background: #111;
+      }
+
+      .story-thumb {
+        display: block;
+        width: 100%;
+        height: auto;
+        background: #111;
+      }
+
+      .story-strip {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 8px;
+        scroll-snap-type: x proximity;
+        -webkit-overflow-scrolling: touch;
+        align-items: flex-start;
+      }
+
+      .story-strip::-webkit-scrollbar {
+        height: 8px;
+      }
+
+      .story-strip::-webkit-scrollbar-thumb {
+        background: #4a4a4a;
+        border-radius: 999px;
+      }
+
+      .story-strip::-webkit-scrollbar-track {
+        background: #242424;
+        border-radius: 999px;
+      }
+
+      .strip-card {
+        flex: 0 0 160px;
+        width: 160px;
+        scroll-snap-align: start;
+        display: block;
+        border-radius: var(--card-radius);
+        overflow: hidden;
+        background: #111;
+      }
+
+      .strip-thumb {
+        display: block;
+        width: 100%;
+        height: auto;
+        background: #111;
+      }
+
+      .empty-note,
+      .error-note {
+        color: var(--muted);
+        font-size: 14px;
+        padding: 4px 0 0;
+      }
+
+      .error-note {
+        color: #ffb28d;
+      }
+
+      .skeleton-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .skeleton-card {
+        width: 100%;
+        aspect-ratio: 3 / 4;
+        border-radius: var(--card-radius);
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.04) 0%,
+          rgba(255, 255, 255, 0.08) 50%,
+          rgba(255, 255, 255, 0.04) 100%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.4s infinite linear;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @keyframes shimmer {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+
+      @media (min-width: 768px) {
+        .content {
+          padding: 20px 24px 96px;
+        }
+
+        .grid-two {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 16px;
+        }
+
+        .skeleton-grid {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 16px;
+        }
+
+        .strip-card {
+          flex: 0 0 220px;
+          width: 220px;
+        }
+
+        .section-title {
+          font-size: 26px;
+        }
+      }
+
+      @media (min-width: 1200px) {
+        .grid-two,
+        .skeleton-grid {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 18px;
+        }
+
+        .strip-card {
+          flex: 0 0 260px;
+          width: 260px;
+        }
+      }
+
+      @media (max-width: 380px) {
+        .section-title {
+          font-size: 20px;
+        }
+
+        .see-all {
+          font-size: 13px;
+          padding: 7px 12px;
+        }
+
+        .strip-card {
+          flex: 0 0 146px;
+          width: 146px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <TopBar title="Tàng Kinh Các" api={API} profileHref="/upgrade" />
+    <StatusBar api={API} upgradeHref="/upgrade" />
+
+    <main class="content">
+      <section id="loadingSection" class="section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span class="section-icon">●</span>
+            <span>Đang tải dữ liệu</span>
+          </h2>
+        </div>
+
+        <div class="skeleton-grid">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
+      </section>
+
+      <section id="errorSection" class="section hidden">
+        <div class="error-note">
+          Không thể tải dữ liệu truyện lúc này. Vui lòng thử lại sau.
+        </div>
+      </section>
+
+      <section id="emptySection" class="section hidden">
+        <div class="empty-note">Hiện chưa có bộ truyện nào để hiển thị.</div>
+      </section>
+
+      <div id="sectionsRoot" class="hidden"></div>
+    </main>
+
+    <BottomNav current="/" />
+
+    <script define:vars={{ API }}>
+      const TRUYEN_CACHE_KEY = "tkc_truyen_cache_v2";
+      const TRUYEN_CACHE_TTL = 1000 * 60 * 10;
+
+      const loadingSection = document.getElementById("loadingSection");
+      const errorSection = document.getElementById("errorSection");
+      const emptySection = document.getElementById("emptySection");
+      const sectionsRoot = document.getElementById("sectionsRoot");
+
+      const genreSections = [
+        { key: "Tiên Hiệp", title: "Tiên Hiệp", icon: "⚔" },
+        { key: "Phá Án", title: "Phá Án", icon: "🕵" },
+        { key: "Linh Dị", title: "Linh Dị", icon: "👁" },
+        { key: "Đô Thị", title: "Đô Thị", icon: "🏙" },
+        { key: "Cẩu Đạo", title: "Cẩu Đạo", icon: "📜" },
+        { key: "Khác", title: "Khác", icon: "✦" },
+        { key: "Xây Dựng Thế Lực", title: "Xây Dựng Thế Lực", icon: "🏰" },
+      ];
+
+      function setViewState(state) {
+        loadingSection.classList.toggle("hidden", state !== "loading");
+        errorSection.classList.toggle("hidden", state !== "error");
+        emptySection.classList.toggle("hidden", state !== "empty");
+        sectionsRoot.classList.toggle("hidden", state !== "content");
+      }
+
+      function sortByMaTruyenDesc(arr) {
+        return [...arr].sort((a, b) => {
+          const numA = Number((a?.ma_truyen || "").replace(/\D/g, "")) || 0;
+          const numB = Number((b?.ma_truyen || "").replace(/\D/g, "")) || 0;
+          return numB - numA;
+        });
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+      }
+
+      function readCache() {
+        try {
+          const raw = localStorage.getItem(TRUYEN_CACHE_KEY);
+          if (!raw) return null;
+
+          const parsed = JSON.parse(raw);
+          if (!parsed || !Array.isArray(parsed.items) || !parsed.cached_at)
+            return null;
+
+          const age = Date.now() - Number(parsed.cached_at);
+          if (!Number.isFinite(age) || age > TRUYEN_CACHE_TTL) return null;
+
+          return parsed.items;
+        } catch {
+          return null;
+        }
+      }
+
+      function writeCache(items) {
+        try {
+          localStorage.setItem(
+            TRUYEN_CACHE_KEY,
+            JSON.stringify({
+              items,
+              cached_at: Date.now(),
+            }),
+          );
+        } catch {}
+      }
+
+      function stableSerialize(items) {
+        try {
+          return JSON.stringify(items);
+        } catch {
+          return "";
+        }
+      }
+
+      function buildSections(items) {
+        const homNayNgheGi = sortByMaTruyenDesc(items).slice(0, 12);
+
+        const congPhapNoiBat = sortByMaTruyenDesc(
+          items.filter((item) => Number(item?.is_hot) === 1),
+        ).slice(0, 12);
+
+        const genreData = genreSections
+          .map((section) => {
+            const sectionItems = sortByMaTruyenDesc(
+              items.filter(
+                (item) => (item?.the_loai || "").trim() === section.key,
+              ),
+            ).slice(0, 8);
+
+            return {
+              ...section,
+              items: sectionItems,
+            };
+          })
+          .filter((section) => section.items.length > 0);
+
+        return { homNayNgheGi, congPhapNoiBat, genreData };
+      }
+
+      function renderStoryCard(item, className, thumbClass, eager = false) {
+        const loadingAttr = eager
+          ? 'loading="eager" fetchpriority="high"'
+          : 'loading="lazy"';
+
+        return `
+          <a href="/truyen/${encodeURIComponent(item.ma_truyen)}" class="${className}">
+            <img
+              class="${thumbClass}"
+              src="${escapeHtml(item.anh_bia || "/fallback.webp")}"
+              alt="${escapeHtml(item.ten_truyen || "Truyện")}"
+              ${loadingAttr}
+              onerror="this.onerror=null;this.src='/fallback.webp';"
+            />
+          </a>
+        `;
+      }
+
+      function renderGridSection({
+        title,
+        icon,
+        href,
+        items,
+        subtle = false,
+        eagerCount = 0,
+      }) {
+        const titleClass = subtle ? "section-title subtle" : "section-title";
+
+        return `
+          <section class="section">
+            <div class="section-header">
+              <h2 class="${titleClass}">
+                <span class="section-icon">${icon}</span>
+                <span>${escapeHtml(title)}</span>
+              </h2>
+              <a href="${href}" class="see-all">Xem tất cả &gt;</a>
+            </div>
+
+            <div class="grid-two">
+              ${items
+                .map((item, index) =>
+                  renderStoryCard(
+                    item,
+                    "story-card",
+                    "story-thumb",
+                    index < eagerCount,
+                  ),
+                )
+                .join("")}
+            </div>
+          </section>
+        `;
+      }
+
+      function renderStripSection(sectionData) {
+        return `
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title subtle">
+          <span class="section-icon">${sectionData.icon}</span>
+          <span>${escapeHtml(sectionData.title)}</span>
+        </h2>
+        <a
+          href="/tat-ca?the_loai=${encodeURIComponent(sectionData.key)}"
+          class="see-all minimal"
+        >
+          Xem tất cả &gt;
+        </a>
+      </div>
+
+      <div class="story-strip">
+        ${sectionData.items
+          .map(
+            (item) => `
+              <a href="/truyen/${encodeURIComponent(item.ma_truyen)}" class="strip-card">
+                <img
+                  class="strip-thumb"
+                  src="${escapeHtml(item.anh_bia || "/fallback.webp")}"
+                  alt="${escapeHtml(item.ten_truyen || "Truyện")}"
+                  loading="lazy"
+                  onerror="this.onerror=null;this.src='/fallback.webp';"
+                />
+              </a>
+            `,
+          )
+          .join("")}
+      </div>
+    </section>
+  `;
+      }
+
+      function renderHome(items) {
+        const { homNayNgheGi, congPhapNoiBat, genreData } =
+          buildSections(items);
+
+        if (
+          homNayNgheGi.length === 0 &&
+          congPhapNoiBat.length === 0 &&
+          genreData.length === 0
+        ) {
+          sectionsRoot.innerHTML = "";
+          setViewState("empty");
+          return;
+        }
+
+        let html = "";
+
+        if (homNayNgheGi.length > 0) {
+          html += renderGridSection({
+            title: "Hôm Nay Nghe Gì?",
+            icon: "●",
+            href: "/tat-ca?section=hom-nay",
+            items: homNayNgheGi,
+            subtle: false,
+            eagerCount: 4,
+          });
+        }
+
+        if (congPhapNoiBat.length > 0) {
+          html += renderGridSection({
+            title: "Công Pháp Nổi Bật",
+            icon: "★",
+            href: "/tat-ca?section=hot",
+            items: congPhapNoiBat,
+            subtle: true,
+            eagerCount: 0,
+          });
+        }
+
+        genreData.forEach((sectionData) => {
+          html += renderStripSection(sectionData);
+        });
+
+        sectionsRoot.innerHTML = html;
+        setViewState("content");
+      }
+
+      async function loadHome() {
+        const cachedItems = readCache();
+        let cachedSignature = "";
+        let hasRenderedCache = false;
+
+        if (cachedItems && cachedItems.length > 0) {
+          cachedSignature = stableSerialize(cachedItems);
+
+          try {
+            renderHome(cachedItems);
+            hasRenderedCache = true;
+          } catch (err) {
+            console.error("Render cache lỗi:", err);
+            hasRenderedCache = false;
+            setViewState("loading");
+          }
+        } else {
+          setViewState("loading");
+        }
+
+        try {
+          const res = await fetch(`${API}/truyen`);
+
+          if (!res.ok) {
+            throw new Error("Không lấy được danh sách truyện");
+          }
+
+          const data = await res.json();
+          const items = Array.isArray(data?.items) ? data.items : [];
+          const nextSignature = stableSerialize(items);
+
+          writeCache(items);
+
+          if (!hasRenderedCache || nextSignature !== cachedSignature) {
+            renderHome(items);
+          } else {
+            const { homNayNgheGi, congPhapNoiBat, genreData } =
+              buildSections(items);
+
+            if (
+              homNayNgheGi.length === 0 &&
+              congPhapNoiBat.length === 0 &&
+              genreData.length === 0
+            ) {
+              setViewState("empty");
+            } else {
+              setViewState("content");
+            }
+          }
+        } catch (e) {
+          console.error("Lỗi lấy danh sách truyện:", e);
+
+          if (!hasRenderedCache) {
+            setViewState("error");
+          }
+        }
+      }
+
+      loadHome();
+    </script>
+  </body>
+</html>

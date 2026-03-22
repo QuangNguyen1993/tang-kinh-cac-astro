@@ -1,0 +1,959 @@
+---
+const API = "https://tan-an-api-v2.vinhquang19930-d93.workers.dev";
+
+import TopBar from "../components/TopBar.astro";
+import StatusBar from "../components/StatusBar.astro";
+import BottomNav from "../components/BottomNav.astro";
+---
+
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nâng Cấp Tu Vi</title>
+
+    <link
+      rel="preconnect"
+      href="https://tan-an-api-v2.vinhquang19930-d93.workers.dev"
+      crossorigin
+    />
+    <link rel="preconnect" href="https://qr.sepay.vn" crossorigin />
+    <link rel="dns-prefetch" href="https://qr.sepay.vn" />
+
+    <style>
+      :root {
+        --bg: #0f0f10;
+        --panel: #151515;
+        --panel-2: #121212;
+        --text: #f3f3f3;
+        --muted: #bdbdbd;
+        --soft: rgba(255, 255, 255, 0.08);
+        --softer: rgba(255, 255, 255, 0.04);
+        --accent: #f06a28;
+        --accent-soft: rgba(240, 106, 40, 0.14);
+        --danger-soft: rgba(255, 90, 90, 0.12);
+        --radius: 16px;
+        --container: 860px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Arial, sans-serif;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .page {
+        width: min(100%, var(--container));
+        margin: 0 auto;
+        padding: 18px 16px 110px;
+      }
+
+      .hero {
+        margin-bottom: 18px;
+      }
+
+      .hero-title {
+        margin: 0 0 8px;
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .hero-sub {
+        margin: 0;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.55;
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--soft);
+        border-radius: var(--radius);
+        padding: 16px;
+      }
+
+      .card + .card {
+        margin-top: 16px;
+      }
+
+      .status-card {
+        display: grid;
+        gap: 10px;
+        min-height: 170px;
+        contain: layout style;
+      }
+
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        width: fit-content;
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.05);
+        transition: opacity 0.18s ease;
+      }
+
+      .status-badge.active {
+        background: var(--accent-soft);
+        color: #ffcfb4;
+      }
+
+      .status-badge.expired {
+        background: rgba(255, 255, 255, 0.05);
+        color: #ffd6c2;
+      }
+
+      .status-badge.blocked {
+        background: var(--danger-soft);
+        color: #ffc0c0;
+      }
+
+      .status-badge.guest {
+        background: rgba(255, 255, 255, 0.05);
+        color: #ddd;
+      }
+
+      .status-badge.loading {
+        background: rgba(255, 255, 255, 0.05);
+        color: #ddd;
+      }
+
+      .status-main {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        min-height: 24px;
+        transition: opacity 0.18s ease;
+      }
+
+      .status-sub {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.55;
+        min-height: 44px;
+        transition: opacity 0.18s ease;
+      }
+
+      .status-actions {
+        display: grid;
+        gap: 10px;
+      }
+
+      .login-btn,
+      .refresh-btn,
+      .copy-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        border-radius: 12px;
+        cursor: pointer;
+        min-height: 46px;
+        padding: 0 16px;
+        font-weight: 700;
+      }
+
+      .login-btn {
+        width: 100%;
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .refresh-btn {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.05);
+        color: #fff;
+      }
+
+      .plan-wrap {
+        display: grid;
+        gap: 12px;
+      }
+
+      .section-title {
+        margin: 0 0 12px;
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .plans {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .plan-btn {
+        width: 100%;
+        text-align: left;
+        border: 1px solid var(--soft);
+        background: var(--panel-2);
+        color: var(--text);
+        border-radius: 16px;
+        padding: 14px;
+        cursor: pointer;
+        transition: 0.18s ease;
+      }
+
+      .plan-btn.active {
+        border-color: rgba(240, 106, 40, 0.5);
+        box-shadow: inset 0 0 0 1px rgba(240, 106, 40, 0.2);
+        background: linear-gradient(
+          180deg,
+          rgba(240, 106, 40, 0.09) 0%,
+          rgba(255, 255, 255, 0.02) 100%
+        );
+      }
+
+      .plan-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .plan-icon {
+        font-size: 22px;
+      }
+
+      .plan-price {
+        margin: 0 0 4px;
+        font-size: 20px;
+        font-weight: 800;
+      }
+
+      .plan-desc {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .qr-card {
+        display: grid;
+        gap: 14px;
+      }
+
+      .qr-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .qr-title {
+        margin: 0 0 6px;
+        font-size: 18px;
+        font-weight: 800;
+      }
+
+      .qr-sub {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.5;
+      }
+
+      .selected-pill {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 32px;
+        padding: 0 12px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: #ffcfb4;
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .qr-box {
+        background: #fff;
+        border-radius: 18px;
+        padding: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 260px;
+        width: 100%;
+        max-width: 348px;
+        margin: 0 auto;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .qr-box img {
+        width: min(100%, 320px);
+        height: auto;
+        display: block;
+      }
+
+      .payment-box {
+        display: grid;
+        gap: 10px;
+      }
+
+      .payment-label {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .payment-code-row {
+        display: flex;
+        gap: 10px;
+        align-items: stretch;
+      }
+
+      .payment-code {
+        flex: 1;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        padding: 0 14px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--soft);
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        word-break: break-all;
+      }
+
+      .copy-btn {
+        min-width: 120px;
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .helper-card {
+        display: grid;
+        gap: 10px;
+      }
+
+      .helper-title {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 800;
+      }
+
+      .helper-list {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.65;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .loading-skeleton {
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.04) 0%,
+          rgba(255, 255, 255, 0.08) 50%,
+          rgba(255, 255, 255, 0.04) 100%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.4s infinite linear;
+      }
+
+      .qr-skeleton {
+        width: min(100%, 320px);
+        aspect-ratio: 1 / 1;
+        border-radius: 16px;
+      }
+
+      .payment-code.loading {
+        color: transparent;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .payment-code.loading::after {
+        content: "";
+        width: 70%;
+        height: 18px;
+        border-radius: 8px;
+        display: block;
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.04) 0%,
+          rgba(255, 255, 255, 0.08) 50%,
+          rgba(255, 255, 255, 0.04) 100%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.4s infinite linear;
+      }
+
+      .copy-btn:disabled {
+        opacity: 0.65;
+        cursor: default;
+      }
+
+      .network-note {
+        color: #ffcfb4;
+      }
+
+      @keyframes shimmer {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+
+      @media (min-width: 768px) {
+        .page {
+          padding: 22px 24px 110px;
+        }
+
+        .hero-title {
+          font-size: 32px;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .plans {
+          grid-template-columns: 1fr;
+        }
+
+        .qr-head {
+          flex-direction: column;
+        }
+
+        .payment-code-row {
+          flex-direction: column;
+        }
+
+        .copy-btn {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <TopBar title="Nâng Cấp Tu Vi" api={API} />
+    <StatusBar api={API} upgradeHref="/upgrade" />
+
+    <main class="page">
+      <section class="hero">
+        <h1 class="hero-title">Nâng Cấp Tu Vi</h1>
+        <p class="hero-sub">
+          Chọn gói linh thạch phù hợp, quét mã QR và hệ thống sẽ tự cộng hạn khi
+          giao dịch hợp lệ.
+        </p>
+      </section>
+
+      <section class="card status-card" id="upgrade-status-card">
+        <div class="status-badge loading" id="upgrade-status-badge">
+          Đang kiểm tra
+        </div>
+        <p class="status-main" id="upgrade-status-main">
+          Đang kiểm tra thời hạn truy cập của đạo hữu...
+        </p>
+        <p class="status-sub" id="upgrade-status-sub">
+          Hệ thống đang đồng bộ payment code và trạng thái tu luyện.
+        </p>
+
+        <div class="status-actions">
+          <a
+            id="upgrade-login-btn"
+            class="login-btn hidden"
+            href={`${API}/auth/google/start`}
+          >
+            Đăng nhập bằng Google
+          </a>
+
+          <button
+            id="refresh-status-btn"
+            type="button"
+            class="refresh-btn hidden"
+          >
+            Làm mới trạng thái
+          </button>
+        </div>
+      </section>
+
+      <section id="upgrade-main">
+        <section class="card plan-wrap">
+          <h2 class="section-title">Chọn gói linh thạch</h2>
+
+          <div class="plans">
+            <button
+              type="button"
+              class="plan-btn active"
+              data-amount="29000"
+              data-label="29 linh thạch"
+            >
+              <div class="plan-top">
+                <span class="plan-icon">✨</span>
+              </div>
+              <p class="plan-price">29 linh thạch</p>
+              <p class="plan-desc">Cộng 30 ngày tu luyện</p>
+            </button>
+
+            <button
+              type="button"
+              class="plan-btn"
+              data-amount="199000"
+              data-label="199 linh thạch"
+            >
+              <div class="plan-top">
+                <span class="plan-icon">💎</span>
+              </div>
+              <p class="plan-price">199 linh thạch</p>
+              <p class="plan-desc">Cộng 365 ngày tu luyện</p>
+            </button>
+          </div>
+        </section>
+
+        <section class="card qr-card">
+          <div class="qr-head">
+            <div>
+              <h2 class="qr-title">Mã QR nâng cấp</h2>
+              <p class="qr-sub">
+                Quét đúng mã theo gói đã chọn. Payment code dưới đây là mã nhận
+                diện riêng của tài khoản bạn.
+              </p>
+            </div>
+
+            <div class="selected-pill" id="selected-plan-pill">
+              29 linh thạch
+            </div>
+          </div>
+
+          <div class="qr-box">
+            <div id="qr-skeleton" class="qr-skeleton loading-skeleton"></div>
+            <img
+              id="qr-image"
+              class="hidden"
+              src=""
+              alt="QR nâng cấp tu vi"
+              loading="eager"
+              decoding="async"
+            />
+          </div>
+
+          <div class="payment-box">
+            <p class="payment-label">Mã thanh toán</p>
+
+            <div class="payment-code-row">
+              <div class="payment-code loading" id="payment-code-text">---</div>
+              <button
+                type="button"
+                class="copy-btn"
+                id="copy-payment-btn"
+                disabled
+              >
+                Sao chép mã
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="card helper-card">
+          <h2 class="helper-title">Lưu ý thanh toán</h2>
+          <ul class="helper-list">
+            <li>Chọn đúng gói trước khi quét mã QR.</li>
+            <li>Hệ thống sẽ tự cộng hạn sau khi nhận được giao dịch hợp lệ.</li>
+            <li>
+              Nếu sau 10 phút vẫn chưa thấy cập nhật trạng thái, vui lòng liên
+              hệ hỗ trợ.
+            </li>
+            <li>Email hỗ trợ: tongmon.tanan@outlook.com.vn</li>
+          </ul>
+        </section>
+      </section>
+    </main>
+
+    <BottomNav current="/upgrade" />
+
+    <script is:inline define:vars={{ API }}>
+      const ME_CACHE_KEY = "tkc_me_cache_v1";
+
+      let currentUser = null;
+      let selectedAmount = 29000;
+      let selectedLabel = "29 linh thạch";
+
+      const statusBadge = document.getElementById("upgrade-status-badge");
+      const statusMain = document.getElementById("upgrade-status-main");
+      const statusSub = document.getElementById("upgrade-status-sub");
+      const loginBtn = document.getElementById("upgrade-login-btn");
+      const refreshBtn = document.getElementById("refresh-status-btn");
+
+      const qrImage = document.getElementById("qr-image");
+      const qrSkeleton = document.getElementById("qr-skeleton");
+      const paymentCodeText = document.getElementById("payment-code-text");
+      const copyPaymentBtn = document.getElementById("copy-payment-btn");
+      const selectedPlanPill = document.getElementById("selected-plan-pill");
+      const planButtons = Array.from(document.querySelectorAll(".plan-btn"));
+
+      function formatDateVN(dateStr) {
+        const d = new Date(dateStr);
+        if (Number.isNaN(d.getTime())) return "";
+        return d.toLocaleDateString("vi-VN");
+      }
+
+      function isValidDate(value) {
+        if (!value) return false;
+        const d = new Date(value);
+        return !Number.isNaN(d.getTime());
+      }
+
+      function getVNDateKey(dateInput = Date.now()) {
+        const d = new Date(dateInput);
+        const VN_OFFSET_MS = 7 * 60 * 60 * 1000;
+        const vn = new Date(d.getTime() + VN_OFFSET_MS);
+
+        const y = vn.getUTCFullYear();
+        const m = vn.getUTCMonth() + 1;
+        const day = vn.getUTCDate();
+
+        return y * 10000 + m * 100 + day;
+      }
+
+      function isUserActiveByVNDate(expiredAtValue) {
+        if (!isValidDate(expiredAtValue)) return false;
+
+        const todayKey = getVNDateKey(Date.now());
+        const expKey = getVNDateKey(expiredAtValue);
+
+        return todayKey <= expKey;
+      }
+
+      function readMeCache() {
+        try {
+          const raw = sessionStorage.getItem(ME_CACHE_KEY);
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          if (!parsed || typeof parsed !== "object" || !parsed.user)
+            return null;
+          return parsed;
+        } catch {
+          return null;
+        }
+      }
+
+      function writeMeCache(user) {
+        try {
+          if (!user) return;
+          sessionStorage.setItem(
+            ME_CACHE_KEY,
+            JSON.stringify({
+              user,
+              cached_at: Date.now(),
+            }),
+          );
+        } catch {}
+      }
+
+      function clearMeCache() {
+        try {
+          sessionStorage.removeItem(ME_CACHE_KEY);
+        } catch {}
+      }
+
+      function fadeStatusUpdate(type, badgeText, mainText, subText) {
+        if (!statusBadge || !statusMain || !statusSub) return;
+
+        statusBadge.style.opacity = "0.65";
+        statusMain.style.opacity = "0.65";
+        statusSub.style.opacity = "0.65";
+
+        requestAnimationFrame(() => {
+          statusBadge.className = `status-badge ${type}`;
+          statusBadge.textContent = badgeText;
+          statusMain.textContent = mainText;
+          statusSub.textContent = subText;
+
+          requestAnimationFrame(() => {
+            statusBadge.style.opacity = "1";
+            statusMain.style.opacity = "1";
+            statusSub.style.opacity = "1";
+          });
+        });
+      }
+
+      function buildQrUrl(paymentCode, amount) {
+        return `https://qr.sepay.vn/img?acc=0394246064&bank=MBBank&amount=${amount}&des=${encodeURIComponent(paymentCode)}&template=compact`;
+      }
+
+      function showQrLoading() {
+        if (qrSkeleton) qrSkeleton.classList.remove("hidden");
+        if (qrImage) qrImage.classList.add("hidden");
+
+        if (paymentCodeText) {
+          paymentCodeText.textContent = "---";
+          paymentCodeText.classList.add("loading");
+        }
+
+        if (copyPaymentBtn) {
+          copyPaymentBtn.disabled = true;
+        }
+      }
+
+      function renderQr() {
+        if (selectedPlanPill) {
+          selectedPlanPill.textContent = selectedLabel;
+        }
+
+        if (!currentUser?.payment_code) {
+          showQrLoading();
+          return;
+        }
+
+        if (paymentCodeText) {
+          paymentCodeText.textContent = currentUser.payment_code;
+          paymentCodeText.classList.remove("loading");
+        }
+
+        if (copyPaymentBtn) {
+          copyPaymentBtn.disabled = false;
+        }
+
+        if (qrImage) {
+          qrImage.onload = function () {
+            if (qrSkeleton) qrSkeleton.classList.add("hidden");
+            qrImage.classList.remove("hidden");
+          };
+
+          qrImage.onerror = function () {
+            if (qrSkeleton) qrSkeleton.classList.remove("hidden");
+            qrImage.classList.add("hidden");
+          };
+
+          qrImage.src = buildQrUrl(currentUser.payment_code, selectedAmount);
+          qrImage.alt = `QR ${selectedLabel}`;
+        }
+      }
+
+      function updateActivePlanButton() {
+        planButtons.forEach((btn) => {
+          const amount = Number(btn.getAttribute("data-amount") || 0);
+          btn.classList.toggle("active", amount === selectedAmount);
+        });
+      }
+
+      function bindPlanEvents() {
+        planButtons.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            selectedAmount = Number(btn.getAttribute("data-amount") || 29000);
+            selectedLabel = btn.getAttribute("data-label") || "29 linh thạch";
+            updateActivePlanButton();
+            renderQr();
+          });
+        });
+      }
+
+      async function copyPaymentCode() {
+        if (!currentUser?.payment_code || !copyPaymentBtn) return;
+
+        try {
+          await navigator.clipboard.writeText(currentUser.payment_code);
+          const oldText = copyPaymentBtn.textContent;
+          copyPaymentBtn.textContent = "Đã sao chép";
+          setTimeout(() => {
+            copyPaymentBtn.textContent = oldText;
+          }, 1400);
+        } catch (e) {
+          console.error("copy payment code error", e);
+        }
+      }
+
+      function showGuestState() {
+        fadeStatusUpdate(
+          "guest",
+          "Chưa đăng nhập",
+          "Đăng nhập để bắt đầu nâng cấp tu vi.",
+          "Payment code được tạo sau khi tài khoản đăng nhập Google thành công.",
+        );
+
+        loginBtn?.classList.remove("hidden");
+        refreshBtn?.classList.add("hidden");
+
+        currentUser = null;
+        clearStaleCacheNotice();
+        showQrLoading();
+      }
+
+      function showBlockedState() {
+        fadeStatusUpdate(
+          "blocked",
+          "Tài khoản bị khóa",
+          "Tài khoản hiện đang bị khóa.",
+          "Bạn không thể nâng cấp tu vi ở thời điểm này. Vui lòng liên hệ hỗ trợ.",
+        );
+
+        loginBtn?.classList.add("hidden");
+        refreshBtn?.classList.add("hidden");
+
+        currentUser = null;
+        clearStaleCacheNotice();
+        showQrLoading();
+      }
+
+      function showActiveState(user) {
+        fadeStatusUpdate(
+          "active",
+          "Đang hoạt động",
+          `Đạo hữu đang có quyền truy cập đến ${formatDateVN(user.expired_at)}.`,
+          "Bạn vẫn có thể nạp thêm để cộng dồn thời hạn tu luyện.",
+        );
+
+        loginBtn?.classList.add("hidden");
+        refreshBtn?.classList.remove("hidden");
+
+        clearStaleCacheNotice();
+        currentUser = user;
+        renderQr();
+      }
+
+      function showExpiredState(user) {
+        fadeStatusUpdate(
+          "expired",
+          "Đã hết hạn",
+          "Đạo hữu đã hết hạn truy cập.",
+          "Chọn gói phù hợp bên dưới để tiếp tục nghe công pháp.",
+        );
+
+        loginBtn?.classList.add("hidden");
+        refreshBtn?.classList.remove("hidden");
+
+        clearStaleCacheNotice();
+        currentUser = user;
+        renderQr();
+      }
+
+      function showStaleCacheNotice() {
+        if (!statusSub) return;
+        statusSub.classList.add("network-note");
+        statusSub.textContent =
+          "Không cập nhật được dữ liệu mới. Đang hiển thị thông tin gần nhất trên thiết bị này.";
+      }
+
+      function clearStaleCacheNotice() {
+        if (!statusSub) return;
+        statusSub.classList.remove("network-note");
+      }
+
+      function applyUserState(user) {
+        if (!user) {
+          showGuestState();
+          return;
+        }
+
+        if (Number(user?.is_blocked) === 1) {
+          showBlockedState();
+          return;
+        }
+
+        if (
+          isValidDate(user?.expired_at) &&
+          isUserActiveByVNDate(user.expired_at)
+        ) {
+          showActiveState(user);
+          return;
+        }
+
+        showExpiredState(user);
+      }
+
+      function renderFromCacheIfAny() {
+        const cached = readMeCache();
+        if (!cached?.user) {
+          return false;
+        }
+
+        applyUserState(cached.user);
+        return true;
+      }
+
+      async function loadMe() {
+        try {
+          const res = await fetch(`${API}/me`, {
+            credentials: "include",
+            headers: {
+              Accept: "application/json",
+            },
+            cache: "no-store",
+          });
+
+          if (res.status === 401 || res.status === 403) {
+            clearMeCache();
+            showGuestState();
+            return null;
+          }
+
+          if (!res.ok) {
+            throw new Error(`Không lấy được /me: ${res.status}`);
+          }
+
+          const data = await res.json();
+
+          if (!data?.user) {
+            clearMeCache();
+            showGuestState();
+            return null;
+          }
+
+          const user = data.user;
+          writeMeCache(user);
+          applyUserState(user);
+          return user;
+        } catch (e) {
+          console.error("load /me error", e);
+
+          const hasCache = renderFromCacheIfAny();
+          if (hasCache) {
+            showStaleCacheNotice();
+            return null;
+          }
+
+          showGuestState();
+          return null;
+        }
+      }
+
+      bindPlanEvents();
+      updateActivePlanButton();
+      copyPaymentBtn?.addEventListener("click", copyPaymentCode);
+      refreshBtn?.addEventListener("click", loadMe);
+
+      const hasCache = renderFromCacheIfAny();
+      if (!hasCache) {
+        showGuestState();
+      }
+
+      loadMe();
+    </script>
+  </body>
+</html>

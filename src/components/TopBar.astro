@@ -1,0 +1,417 @@
+---
+const {
+  title = "Tàng Kinh Các",
+  api = "https://tan-an-api-v2.vinhquang19930-d93.workers.dev",
+  profileHref = "/upgrade",
+  showMenu = true,
+  menuHref = "#",
+} = Astro.props;
+---
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-row">
+      {showMenu ? (
+        <a href={menuHref} class="menu-btn" aria-label="Mở menu">☰</a>
+      ) : (
+        <div class="topbar-spacer"></div>
+      )}
+
+      <h1 class="brand-title">{title}</h1>
+
+      <div class="topbar-actions">
+        <div class="topbar-spacer" id="topbar-spacer"></div>
+
+        <button
+          id="avatar-btn"
+          class="avatar-btn"
+          type="button"
+          aria-label="Mở menu tài khoản"
+          aria-expanded="false"
+        >
+          <img id="avatar-img" class="avatar-img" src="" alt="Avatar" />
+          <span id="avatar-fallback" class="avatar-fallback">U</span>
+        </button>
+
+        <div id="profile-menu" class="profile-menu">
+          <div class="profile-head">
+            <div class="profile-head-avatar">
+              <img id="profile-head-avatar-img" src="" alt="Avatar tài khoản" />
+              <span id="profile-head-fallback" class="avatar-fallback">U</span>
+            </div>
+
+            <div class="profile-head-info">
+              <p id="profile-name" class="profile-head-name">Đạo hữu</p>
+              <p id="profile-email" class="profile-head-email"></p>
+            </div>
+          </div>
+
+          <div class="profile-actions">
+            <button id="logout-btn" class="logout-btn" type="button">
+              <span>Đăng xuất</span>
+              <span>↗</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<style>
+  .topbar {
+    background: #5a1f0f;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+
+  .topbar-inner {
+    width: min(100%, 1280px);
+    margin: 0 auto;
+    padding: 16px;
+  }
+
+  .topbar-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 40px;
+  }
+
+  .menu-btn {
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 22px;
+    line-height: 1;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+
+  .brand-title {
+    flex: 1;
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+    color: #fff;
+  }
+
+  .topbar-spacer {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+  }
+
+  .topbar-actions {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-shrink: 0;
+  }
+
+  .avatar-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    overflow: hidden;
+    border: none;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.12);
+    display: none;
+    cursor: pointer;
+    z-index: 2;
+  }
+
+  .avatar-btn.show {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+  }
+
+  .avatar-fallback {
+    width: 100%;
+    height: 100%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .profile-menu {
+    position: absolute;
+    top: 48px;
+    right: 0;
+    width: min(280px, calc(100vw - 32px));
+    background: #161616;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    padding: 10px;
+    display: none;
+    z-index: 20;
+  }
+
+  .profile-menu.show {
+    display: block;
+  }
+
+  .profile-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .profile-head-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.12);
+    position: relative;
+  }
+
+  .profile-head-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: none;
+  }
+
+  .profile-head-avatar .avatar-fallback {
+    display: none;
+  }
+
+  .profile-head-info {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .profile-head-name {
+    margin: 0 0 4px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .profile-head-email {
+    margin: 0;
+    font-size: 12px;
+    color: #bdbdbd;
+    word-break: break-word;
+  }
+
+  .profile-actions {
+    display: grid;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .logout-btn {
+    width: 100%;
+    border: 0;
+    border-radius: 10px;
+    padding: 11px 12px;
+    text-align: left;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    font: inherit;
+    text-decoration: none;
+    background: rgba(240, 106, 40, 0.12);
+    color: #ffb28d;
+  }
+
+  @media (min-width: 768px) {
+    .brand-title {
+      font-size: 22px;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .profile-menu {
+      right: 0;
+      left: auto;
+    }
+  }
+</style>
+
+<script is:inline define:vars={{ api }}>
+  const ME_CACHE_KEY = "tkc_me_cache_v1";
+
+  function getInitial(name) {
+    if (!name || typeof name !== "string") return "U";
+    return name.trim().charAt(0).toUpperCase() || "U";
+  }
+
+  function clearMeCache() {
+    try {
+      sessionStorage.removeItem(ME_CACHE_KEY);
+    } catch {}
+  }
+
+  function closeProfileMenu() {
+    const avatarBtn = document.getElementById("avatar-btn");
+    const menu = document.getElementById("profile-menu");
+    if (menu) menu.classList.remove("show");
+    if (avatarBtn) avatarBtn.setAttribute("aria-expanded", "false");
+  }
+
+  function toggleProfileMenu() {
+    const avatarBtn = document.getElementById("avatar-btn");
+    const menu = document.getElementById("profile-menu");
+    if (!menu || !avatarBtn) return;
+
+    const willOpen = !menu.classList.contains("show");
+    menu.classList.toggle("show", willOpen);
+    avatarBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+  }
+
+  function showFallbackAvatar(initial) {
+    const avatarImg = document.getElementById("avatar-img");
+    const avatarFallback = document.getElementById("avatar-fallback");
+    const profileHeadAvatarImg = document.getElementById("profile-head-avatar-img");
+    const profileHeadFallback = document.getElementById("profile-head-fallback");
+
+    if (avatarImg) avatarImg.style.display = "none";
+    if (profileHeadAvatarImg) profileHeadAvatarImg.style.display = "none";
+
+    if (avatarFallback) {
+      avatarFallback.textContent = initial;
+      avatarFallback.style.display = "inline-flex";
+    }
+
+    if (profileHeadFallback) {
+      profileHeadFallback.textContent = initial;
+      profileHeadFallback.style.display = "inline-flex";
+    }
+  }
+
+  function showAvatar(user) {
+    const spacer = document.getElementById("topbar-spacer");
+    const avatarBtn = document.getElementById("avatar-btn");
+    const avatarImg = document.getElementById("avatar-img");
+    const avatarFallback = document.getElementById("avatar-fallback");
+    const profileHeadAvatarImg = document.getElementById("profile-head-avatar-img");
+    const profileHeadFallback = document.getElementById("profile-head-fallback");
+    const profileName = document.getElementById("profile-name");
+    const profileEmail = document.getElementById("profile-email");
+
+    if (spacer) spacer.style.display = "none";
+    if (avatarBtn) avatarBtn.classList.add("show");
+
+    const initial = getInitial(user?.name);
+
+    if (profileName) profileName.textContent = user?.name || "Đạo hữu";
+    if (profileEmail) profileEmail.textContent = user?.email || "";
+
+    if (avatarFallback) avatarFallback.style.display = "none";
+    if (profileHeadFallback) profileHeadFallback.style.display = "none";
+
+    if (user?.avatar_url) {
+      if (avatarImg) {
+        avatarImg.src = user.avatar_url;
+        avatarImg.style.display = "block";
+        avatarImg.onerror = function () {
+          showFallbackAvatar(initial);
+        };
+      }
+
+      if (profileHeadAvatarImg) {
+        profileHeadAvatarImg.src = user.avatar_url;
+        profileHeadAvatarImg.style.display = "block";
+        profileHeadAvatarImg.onerror = function () {
+          showFallbackAvatar(initial);
+        };
+      }
+    } else {
+      showFallbackAvatar(initial);
+    }
+  }
+
+  async function logout() {
+    try {
+      await fetch(`${api}/logout`, {
+        method: "GET",
+        credentials: "include",
+      });
+    } catch (e) {
+      console.error("Lỗi đăng xuất:", e);
+    } finally {
+      clearMeCache();
+      window.location.reload();
+    }
+  }
+
+  async function loadMeForTopbar() {
+    try {
+      const res = await fetch(`${api}/me`, {
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        return;
+      }
+
+      const data = await res.json();
+      if (!data?.ok || !data?.user) {
+        return;
+      }
+
+      showAvatar(data.user);
+    } catch (e) {
+      console.error("Lỗi lấy user topbar:", e);
+    }
+  }
+
+  document.addEventListener("click", (event) => {
+    const avatarBtn = document.getElementById("avatar-btn");
+    const menu = document.getElementById("profile-menu");
+
+    if (!avatarBtn || !menu) return;
+
+    const target = event.target;
+    if (!(target instanceof Node)) return;
+
+    const clickedInsideAvatar = avatarBtn.contains(target);
+    const clickedInsideMenu = menu.contains(target);
+
+    if (clickedInsideAvatar) {
+      toggleProfileMenu();
+      return;
+    }
+
+    if (!clickedInsideMenu) {
+      closeProfileMenu();
+    }
+  });
+
+  document.getElementById("logout-btn")?.addEventListener("click", logout);
+
+  loadMeForTopbar();
+</script>

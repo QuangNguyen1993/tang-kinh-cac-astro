@@ -1,0 +1,484 @@
+---
+export const prerender = false;
+
+import BottomNav from "../components/BottomNav.astro";
+
+const API = "https://tan-an-api-v2.vinhquang19930-d93.workers.dev";
+
+const url = new URL(Astro.request.url);
+const section = (url.searchParams.get("section") || "").trim();
+const theLoai = (url.searchParams.get("the_loai") || "").trim();
+
+let pageTitle = "Tất cả bộ truyện";
+
+if (section === "hom-nay") {
+  pageTitle = "Hôm Nay Nghe Gì?";
+} else if (section === "hot") {
+  pageTitle = "Công Pháp Nổi Bật";
+} else if (theLoai) {
+  pageTitle = theLoai;
+}
+---
+
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+
+    <link
+      rel="preconnect"
+      href="https://tan-an-api-v2.vinhquang19930-d93.workers.dev"
+      crossorigin
+    />
+
+    <style is:global>
+      :root {
+        --bg: #0f0f10;
+        --panel: #151515;
+        --header: #5a1f0f;
+        --text: #f3f3f3;
+        --muted: #bdbdbd;
+        --line: rgba(255, 255, 255, 0.08);
+        --container: 860px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: Arial, sans-serif;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .topbar {
+        background: var(--header);
+        position: sticky;
+        top: 0;
+        z-index: 20;
+      }
+
+      .topbar-inner {
+        width: min(100%, var(--container));
+        margin: 0 auto;
+        padding: 16px;
+      }
+
+      .topbar-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .back-btn {
+        width: 28px;
+        height: 28px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        color: #fff;
+      }
+
+      .page-title {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+        line-height: 1.2;
+        flex: 1;
+        text-align: center;
+        padding-right: 28px;
+      }
+
+      .content {
+        width: min(100%, var(--container));
+        margin: 0 auto;
+        padding: 16px;
+        padding-bottom: 32px;
+      }
+
+      .list {
+        display: flex;
+        flex-direction: column;
+        background: transparent;
+      }
+
+      .item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 81px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--line);
+        contain: layout paint;
+      }
+
+      .thumb {
+        width: 56px;
+        height: 56px;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+        border-radius: 8px;
+        background: #222;
+        flex-shrink: 0;
+      }
+
+      .meta {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .name {
+        margin: 0;
+        color: #fff;
+        font-size: 18px;
+        line-height: 1.35;
+        font-weight: 700;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .arrow {
+        flex-shrink: 0;
+        color: #999;
+        font-size: 24px;
+        line-height: 1;
+      }
+
+      .empty-note,
+      .error-note {
+        color: var(--muted);
+        font-size: 14px;
+        padding-top: 8px;
+      }
+
+      .error-note {
+        color: #ffb28d;
+      }
+
+      .skeleton-list {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .skeleton-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-height: 81px;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .skeleton-thumb {
+        width: 56px;
+        height: 56px;
+        border-radius: 8px;
+        flex-shrink: 0;
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.04) 0%,
+          rgba(255, 255, 255, 0.08) 50%,
+          rgba(255, 255, 255, 0.04) 100%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.4s infinite linear;
+      }
+
+      .skeleton-name {
+        height: 18px;
+        width: min(70%, 360px);
+        border-radius: 8px;
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.04) 0%,
+          rgba(255, 255, 255, 0.08) 50%,
+          rgba(255, 255, 255, 0.04) 100%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.4s infinite linear;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @keyframes shimmer {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .name {
+          font-size: 16px;
+        }
+
+        .thumb,
+        .skeleton-thumb {
+          width: 52px;
+          height: 52px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="topbar-row">
+          <a href="/" class="back-btn" aria-label="Quay lại">←</a>
+          <h1 class="page-title">{pageTitle}</h1>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+      <div id="loadingBox" class="skeleton-list">
+        <div class="skeleton-item">
+          <div class="skeleton-thumb"></div>
+          <div class="meta"><div class="skeleton-name"></div></div>
+        </div>
+        <div class="skeleton-item">
+          <div class="skeleton-thumb"></div>
+          <div class="meta"><div class="skeleton-name"></div></div>
+        </div>
+        <div class="skeleton-item">
+          <div class="skeleton-thumb"></div>
+          <div class="meta"><div class="skeleton-name"></div></div>
+        </div>
+        <div class="skeleton-item">
+          <div class="skeleton-thumb"></div>
+          <div class="meta"><div class="skeleton-name"></div></div>
+        </div>
+        <div class="skeleton-item">
+          <div class="skeleton-thumb"></div>
+          <div class="meta"><div class="skeleton-name"></div></div>
+        </div>
+      </div>
+
+      <div id="errorBox" class="error-note hidden">
+        Không thể tải dữ liệu truyện lúc này. Vui lòng thử lại sau.
+      </div>
+
+      <div id="emptyBox" class="empty-note hidden">Không có dữ liệu.</div>
+
+      <div id="listRoot" class="list hidden"></div>
+    </main>
+
+    <BottomNav current="/" />
+
+    <script define:vars={{ API, section, theLoai }}>
+      const TRUYEN_CACHE_KEY = "tkc_truyen_cache_v2";
+      const TRUYEN_CACHE_TTL = 1000 * 60 * 10;
+
+      const loadingBox = document.getElementById("loadingBox");
+      const errorBox = document.getElementById("errorBox");
+      const emptyBox = document.getElementById("emptyBox");
+      const listRoot = document.getElementById("listRoot");
+
+      function sortByUpdatedAtDesc(arr) {
+        return [...arr].sort((a, b) => {
+          const timeA = new Date(a?.updated_at || a?.created_at || 0).getTime();
+          const timeB = new Date(b?.updated_at || b?.created_at || 0).getTime();
+          return timeB - timeA;
+        });
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#39;");
+      }
+
+      function readCache() {
+        try {
+          const raw = localStorage.getItem(TRUYEN_CACHE_KEY);
+          if (!raw) return null;
+
+          const parsed = JSON.parse(raw);
+          if (!parsed || !Array.isArray(parsed.items) || !parsed.cached_at)
+            return null;
+
+          const age = Date.now() - Number(parsed.cached_at);
+          if (!Number.isFinite(age) || age > TRUYEN_CACHE_TTL) return null;
+
+          return parsed.items;
+        } catch {
+          return null;
+        }
+      }
+
+      function writeCache(items) {
+        try {
+          localStorage.setItem(
+            TRUYEN_CACHE_KEY,
+            JSON.stringify({
+              items,
+              cached_at: Date.now(),
+            }),
+          );
+        } catch {}
+      }
+
+      function stableSerialize(items) {
+        try {
+          return JSON.stringify(items);
+        } catch {
+          return "";
+        }
+      }
+
+      function filterItems(items) {
+        let listItems = sortByUpdatedAtDesc(items);
+
+        if (section === "hom-nay") {
+          listItems = sortByUpdatedAtDesc(items);
+        } else if (section === "hot") {
+          listItems = sortByUpdatedAtDesc(
+            items.filter((item) => Number(item?.is_hot) === 1),
+          );
+        } else if (theLoai) {
+          listItems = sortByUpdatedAtDesc(
+            items.filter((item) => (item?.the_loai || "").trim() === theLoai),
+          );
+        }
+
+        return listItems;
+      }
+
+      function showLoading(show) {
+        loadingBox.classList.toggle("hidden", !show);
+      }
+
+      function showError(show) {
+        errorBox.classList.toggle("hidden", !show);
+      }
+
+      function showEmpty(show) {
+        emptyBox.classList.toggle("hidden", !show);
+      }
+
+      function renderList(items) {
+        showLoading(false);
+        showError(false);
+
+        if (!items.length) {
+          listRoot.innerHTML = "";
+          listRoot.classList.add("hidden");
+          showEmpty(true);
+          return;
+        }
+
+        showEmpty(false);
+
+        const html = items
+          .map(
+            (item) => `
+              <a class="item" href="/truyen/${encodeURIComponent(item.ma_truyen)}">
+                <img
+                  class="thumb"
+                  src="${escapeHtml(item.anh_bia || "/fallback.webp")}"
+                  alt="${escapeHtml(item.ten_truyen || "Truyện")}"
+                  loading="lazy"
+                  onerror="this.onerror=null;this.src='/fallback.webp';"
+                />
+                <div class="meta">
+                  <p class="name">${escapeHtml(item.ten_truyen || "")}</p>
+                </div>
+                <div class="arrow">›</div>
+              </a>
+            `,
+          )
+          .join("");
+
+        listRoot.innerHTML = html;
+        listRoot.classList.remove("hidden");
+      }
+
+      async function loadListPage() {
+        const cachedAllItems = readCache();
+        let cachedFilteredItems = [];
+        let cachedSignature = "";
+        let hasRenderedCache = false;
+
+        if (cachedAllItems && cachedAllItems.length > 0) {
+          cachedFilteredItems = filterItems(cachedAllItems);
+          cachedSignature = stableSerialize(cachedFilteredItems);
+
+          try {
+            renderList(cachedFilteredItems);
+            hasRenderedCache = true;
+          } catch (err) {
+            console.error("Render cache lỗi:", err);
+            hasRenderedCache = false;
+            showLoading(true);
+          }
+        } else {
+          showLoading(true);
+          showError(false);
+          showEmpty(false);
+        }
+
+        try {
+          const res = await fetch(`${API}/truyen`, {
+            credentials: "include",
+          });
+
+          if (!res.ok) {
+            throw new Error("Không lấy được danh sách truyện");
+          }
+
+          const data = await res.json();
+          const allItems = Array.isArray(data?.items) ? data.items : [];
+          const listItems = filterItems(allItems);
+          const nextSignature = stableSerialize(listItems);
+
+          writeCache(allItems);
+
+          if (!hasRenderedCache || nextSignature !== cachedSignature) {
+            renderList(listItems);
+          } else {
+            showLoading(false);
+            showError(false);
+            if (listItems.length > 0) {
+              listRoot.classList.remove("hidden");
+              showEmpty(false);
+            }
+          }
+        } catch (e) {
+          console.error("Lỗi lấy danh sách truyện:", e);
+          showLoading(false);
+
+          if (!hasRenderedCache) {
+            showError(true);
+            listRoot.classList.add("hidden");
+            showEmpty(false);
+          } else {
+            showError(false);
+          }
+        }
+      }
+
+      loadListPage();
+    </script>
+  </body>
+</html>

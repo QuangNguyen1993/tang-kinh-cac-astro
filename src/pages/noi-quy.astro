@@ -1,0 +1,136 @@
+---
+import TopBar from "../components/TopBar.astro";
+import BottomNav from "../components/BottomNav.astro";
+
+const API = "https://tan-an-api-v2.vinhquang19930-d93.workers.dev";
+---
+
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nội Quy Tông Môn</title>
+
+    <style>
+      body {
+        margin: 0;
+        background: #0f0f10;
+        color: #f3f3f3;
+        font-family: Arial, sans-serif;
+      }
+
+      .page {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px 16px 100px;
+      }
+
+      h1 {
+        font-size: 26px;
+        margin-bottom: 12px;
+      }
+
+      h2 {
+        font-size: 18px;
+        margin-top: 24px;
+        margin-bottom: 8px;
+        color: #f06a28;
+      }
+
+      p,
+      li {
+        font-size: 14px;
+        line-height: 1.7;
+        color: #cfcfcf;
+      }
+
+      ul {
+        padding-left: 18px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <TopBar title="Nội Quy Tông Môn" api={API} />
+
+    <main class="page">
+      <h1>Nội Quy & Điều Khoản Sử Dụng</h1>
+
+      <h2>1. Phạm vi dịch vụ</h2>
+      <p>
+        Tông môn Tấn An cung cấp nội dung truyện audio theo mô hình thành viên
+        có thời hạn. Việc thanh toán chỉ cấp quyền truy cập tạm thời, không cấu
+        thành quyền sở hữu nội dung.
+      </p>
+      <p>
+        Hệ thống có quyền thay đổi hoặc gỡ bỏ nội dung bất kỳ lúc nào mà không
+        cần thông báo trước. Quyền truy cập mang tính cá nhân và không được
+        chuyển nhượng.
+      </p>
+
+      <h2>2. Tài khoản & trách nhiệm</h2>
+      <p>Người dùng chịu trách nhiệm đối với:</p>
+      <ul>
+        <li>Thông tin đăng nhập</li>
+        <li>Mọi hoạt động phát sinh từ tài khoản</li>
+      </ul>
+
+      <p>Nghiêm cấm:</p>
+      <ul>
+        <li>Chia sẻ hoặc cho thuê tài khoản</li>
+        <li>Sao chép, ghi âm, phát tán nội dung</li>
+        <li>Thu thập dữ liệu tự động</li>
+        <li>Vượt qua cơ chế kiểm soát truy cập</li>
+      </ul>
+
+      <p>
+        Hệ thống có quyền khóa tài khoản mà không hoàn tiền nếu phát hiện vi
+        phạm.
+      </p>
+
+      <h2>3. Thanh toán & hiệu lực</h2>
+      <ul>
+        <li>Quyền truy cập chỉ có hiệu lực sau khi thanh toán được xác nhận</li>
+        <li>Tự động chấm dứt khi hết hạn</li>
+        <li>Không hoàn tiền sau khi đã kích hoạt</li>
+      </ul>
+
+      <p>Hệ thống có thể cần vài phút để xác nhận giao dịch.</p>
+
+      <h2>4. Giới hạn trách nhiệm</h2>
+      <ul>
+        <li>Không đảm bảo hoạt động liên tục 100%</li>
+        <li>Có thể phát sinh lỗi kỹ thuật</li>
+        <li>Không đảm bảo tương thích mọi thiết bị</li>
+      </ul>
+
+      <h2>5. Nội dung & bản quyền</h2>
+      <p>Nếu bạn cho rằng nội dung vi phạm bản quyền, vui lòng gửi email:</p>
+      <p><b>tongmon.tanan@outlook.com.vn</b></p>
+
+      <h2>6. Thay đổi điều khoản</h2>
+      <p>
+        Điều khoản có thể được thay đổi bất kỳ lúc nào. Việc tiếp tục sử dụng
+        đồng nghĩa với việc chấp nhận thay đổi.
+      </p>
+
+      <h2>7. Nội dung bên thứ ba</h2>
+      <p>
+        Một số nội dung được tổng hợp từ nguồn bên thứ ba. Tông môn không chịu
+        trách nhiệm về nội dung gốc.
+      </p>
+
+      <h2>8. Nội dung nhạy cảm</h2>
+      <p>
+        Nội dung mang tính giải trí, có thể chứa yếu tố trưởng thành. Người dùng
+        tự chịu trách nhiệm khi tiếp cận.
+      </p>
+
+      <h2>9. Liên hệ</h2>
+      <p>Email hỗ trợ: <b>tongmon.tanan@outlook.com.vn</b></p>
+      <p>Thời gian phản hồi: 24–48 giờ</p>
+    </main>
+
+    <BottomNav />
+  </body>
+</html>

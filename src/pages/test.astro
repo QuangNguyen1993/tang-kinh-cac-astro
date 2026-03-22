@@ -1,0 +1,210 @@
+---
+const API_BASE = "https://tan-an-api-v2.vinhquang19930-d93.workers.dev";
+---
+
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Astro - Login / Me / Play</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 760px;
+        margin: 40px auto;
+        padding: 0 16px;
+        line-height: 1.5;
+      }
+
+      h1 {
+        margin-bottom: 24px;
+      }
+
+      .box {
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 20px;
+      }
+
+      .row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+
+      input {
+        padding: 10px 12px;
+        min-width: 240px;
+      }
+
+      button {
+        padding: 10px 14px;
+        cursor: pointer;
+      }
+
+      pre {
+        background: #f6f6f6;
+        padding: 12px;
+        border-radius: 8px;
+        overflow: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      audio {
+        width: 100%;
+        margin-top: 12px;
+      }
+
+      .muted {
+        color: #666;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Astro test: login → me → play</h1>
+
+    <div class="box">
+      <h2>1) Login test</h2>
+      <div class="row">
+        <input id="userId" value="u_test_001" placeholder="Nhập user_id" />
+        <button id="btnLogin">Login test</button>
+        <button id="btnGoogleLogin">Google login</button>
+        <button id="btnMe">Check /me</button>
+        <button id="btnLogout">Logout</button>
+      </div>
+      <div class="muted">
+        API base: <span id="apiBase">{API_BASE}</span>
+      </div>
+    </div>
+
+    <div class="box">
+      <h2>2) Play audio</h2>
+      <div class="row">
+        <input id="maTap" value="TR001_T001" placeholder="Nhập ma_tap" />
+        <button id="btnPlay">Play</button>
+      </div>
+
+      <audio id="player" controls preload="none"></audio>
+      <p class="muted">
+        Audio sẽ gọi trực tiếp sang Worker để cookie sid tự đi kèm.
+      </p>
+    </div>
+
+    <div class="box">
+      <h2>3) Kết quả</h2>
+      <pre id="output">Chưa có dữ liệu</pre>
+    </div>
+
+    <script define:vars={{ API_BASE }}>
+      const output = document.getElementById("output");
+      const userIdInput = document.getElementById("userId");
+      const maTapInput = document.getElementById("maTap");
+      const player = document.getElementById("player");
+
+      const btnLogin = document.getElementById("btnLogin");
+      const btnGoogleLogin = document.getElementById("btnGoogleLogin");
+      const btnMe = document.getElementById("btnMe");
+      const btnLogout = document.getElementById("btnLogout");
+      const btnPlay = document.getElementById("btnPlay");
+
+      function show(data) {
+        if (typeof data === "string") {
+          output.textContent = data;
+          return;
+        }
+        output.textContent = JSON.stringify(data, null, 2);
+      }
+
+      async function fetchJson(url, options = {}) {
+        const res = await fetch(url, {
+          ...options,
+          credentials: "include",
+        });
+
+        const text = await res.text();
+
+        try {
+          return {
+            ok: res.ok,
+            status: res.status,
+            data: JSON.parse(text),
+          };
+        } catch {
+          return {
+            ok: res.ok,
+            status: res.status,
+            data: text,
+          };
+        }
+      }
+
+      btnLogin.addEventListener("click", async () => {
+        const userId = userIdInput.value.trim();
+
+        if (!userId) {
+          show({ ok: false, error: "Thiếu user_id" });
+          return;
+        }
+
+        const url = `${API_BASE}/login-test?user_id=${encodeURIComponent(userId)}`;
+        const result = await fetchJson(url);
+        show(result);
+      });
+
+      btnMe.addEventListener("click", async () => {
+        const url = `${API_BASE}/me`;
+        const result = await fetchJson(url);
+        show(result);
+      });
+
+      btnGoogleLogin.addEventListener("click", () => {
+        window.location.href = `${API_BASE}/auth/google/start`;
+      });
+
+      btnLogout.addEventListener("click", async () => {
+        const url = `${API_BASE}/logout`;
+        const result = await fetchJson(url);
+        show(result);
+
+        player.pause();
+        player.removeAttribute("src");
+        player.load();
+      });
+
+      btnPlay.addEventListener("click", async () => {
+        const maTap = maTapInput.value.trim();
+
+        if (!maTap) {
+          show({ ok: false, error: "Thiếu ma_tap" });
+          return;
+        }
+
+        const audioUrl = `${API_BASE}/play?ma_tap=${encodeURIComponent(maTap)}`;
+
+        player.crossOrigin = "use-credentials";
+        player.src = audioUrl;
+        player.load();
+
+        try {
+          await player.play();
+          show({
+            ok: true,
+            message: "Đã gán src cho audio player",
+            src: audioUrl,
+          });
+        } catch (err) {
+          show({
+            ok: false,
+            error: "Không play được",
+            detail: String(err),
+            src: audioUrl,
+          });
+        }
+});
+    </script>
+  </body>
+</html>

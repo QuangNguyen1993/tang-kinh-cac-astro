@@ -1,0 +1,301 @@
+---
+const {
+  api = "https://tan-an-api-v2.vinhquang19930-d93.workers.dev",
+  upgradeHref = "/upgrade",
+} = Astro.props;
+---
+
+<div class="status-wrap">
+  <div class="status-box loading" id="status-box">
+    <p class="status-text" id="status-text">
+      Đang kiểm tra thời hạn truy cập của đạo hữu...
+    </p>
+    <a href={`${api}/auth/google/start`} class="status-link" id="status-link">
+      Đăng nhập
+    </a>
+  </div>
+</div>
+
+<style is:global>
+  .status-wrap {
+    width: min(100%, 1280px);
+    margin: 0 auto;
+    padding: 12px 16px 0;
+  }
+
+  .status-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 62px;
+    background: #151515;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #f3f3f3;
+    border-radius: 14px;
+    padding: 12px 14px;
+    transition:
+      border-color 0.18s ease,
+      box-shadow 0.18s ease,
+      opacity 0.18s ease;
+  }
+
+  .status-box.loading {
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .status-box.guest {
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .status-box.active {
+    border-color: rgba(240, 106, 40, 0.42);
+    box-shadow: inset 0 0 0 1px rgba(240, 106, 40, 0.12);
+  }
+
+  .status-box.expired {
+    border-color: rgba(240, 106, 40, 0.24);
+  }
+
+  .status-box.blocked {
+    border-color: rgba(255, 90, 90, 0.34);
+  }
+
+  .status-text {
+    margin: 0;
+    min-height: 20px;
+    color: #bdbdbd;
+    font-size: 14px;
+    line-height: 1.45;
+    transition: opacity 0.18s ease;
+  }
+
+  .status-link {
+    flex-shrink: 0;
+    color: #f06a28;
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: opacity 0.18s ease;
+  }
+
+  .status-text.network-note {
+    color: #ffcfb4;
+  }
+
+  @media (min-width: 768px) {
+    .status-wrap {
+      padding: 14px 24px 0;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .status-box {
+      flex-direction: column;
+      align-items: flex-start;
+      min-height: 84px;
+    }
+
+    .status-link {
+      white-space: normal;
+    }
+  }
+</style>
+
+<script is:inline define:vars={{ api, upgradeHref }}>
+  const ME_CACHE_KEY = "tkc_me_cache_v1";
+
+  const box = document.getElementById("status-box");
+  const textEl = document.getElementById("status-text");
+  const linkEl = document.getElementById("status-link");
+
+  function isValidDate(value) {
+    if (!value) return false;
+    const d = new Date(value);
+    return !Number.isNaN(d.getTime());
+  }
+  // 👉 THÊM NGAY DƯỚI ĐÂY
+  function getVNDateKey(dateInput = Date.now()) {
+    const d = new Date(dateInput);
+    const VN_OFFSET_MS = 7 * 60 * 60 * 1000;
+    const vn = new Date(d.getTime() + VN_OFFSET_MS);
+
+    const y = vn.getUTCFullYear();
+    const m = vn.getUTCMonth() + 1;
+    const day = vn.getUTCDate();
+
+    return y * 10000 + m * 100 + day;
+  }
+
+  function isUserActiveByVNDate(expiredAtValue) {
+    if (!isValidDate(expiredAtValue)) return false;
+
+    const todayKey = getVNDateKey(Date.now());
+    const expKey = getVNDateKey(expiredAtValue);
+
+    return todayKey <= expKey;
+  }
+  function readMeCache() {
+    try {
+      const raw = sessionStorage.getItem(ME_CACHE_KEY);
+      if (!raw) return null;
+
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object" || !parsed.user) return null;
+
+      return parsed.user;
+    } catch {
+      return null;
+    }
+  }
+
+  function writeMeCache(user) {
+    try {
+      if (!user) return;
+      sessionStorage.setItem(ME_CACHE_KEY, JSON.stringify({ user }));
+    } catch {}
+  }
+
+  function clearMeCache() {
+    try {
+      sessionStorage.removeItem(ME_CACHE_KEY);
+    } catch {}
+  }
+
+  function fadeUpdate(type, text, linkHref, linkText) {
+    if (!box || !textEl || !linkEl) return;
+
+    box.style.opacity = "0.82";
+    textEl.style.opacity = "0.82";
+    linkEl.style.opacity = "0.82";
+
+    requestAnimationFrame(() => {
+      box.className = `status-box ${type}`;
+      textEl.classList.remove("network-note");
+      textEl.textContent = text;
+      linkEl.href = linkHref;
+      linkEl.textContent = linkText;
+
+      requestAnimationFrame(() => {
+        box.style.opacity = "1";
+        textEl.style.opacity = "1";
+        linkEl.style.opacity = "1";
+      });
+    });
+  }
+
+  function showNetworkNote(text) {
+    if (!textEl) return;
+    textEl.classList.add("network-note");
+    textEl.textContent = text;
+  }
+
+  function applyGuestState() {
+    fadeUpdate(
+      "guest",
+      "Đăng nhập để kiểm tra trạng thái tu vi.",
+      `${api}/auth/google/start`,
+      "Đăng nhập",
+    );
+  }
+
+  function applyUserToStatus(user) {
+    if (!user) {
+      applyGuestState();
+      return;
+    }
+
+    if (Number(user?.is_blocked) === 1) {
+      fadeUpdate(
+        "blocked",
+        "Tài khoản hiện đang bị khóa.",
+        "mailto:tongmon.tanan@outlook.com.vn?subject=Ho%20tro%20tai%20khoan%20bi%20khoa",
+        "Liên hệ hỗ trợ",
+      );
+      return;
+    }
+
+    const expiredAt = new Date(user.expired_at);
+
+    if (
+      isValidDate(user?.expired_at) &&
+      isUserActiveByVNDate(user.expired_at)
+    ) {
+      fadeUpdate(
+        "active",
+        `Đạo hữu đang có quyền truy cập đến ${expiredAt.toLocaleDateString("vi-VN")}.`,
+        upgradeHref,
+        "Nâng cấp tu vi",
+      );
+      return;
+    }
+
+    fadeUpdate(
+      "expired",
+      "Đạo hữu đã hết hạn truy cập. Nâng cấp để tiếp tục nghe công pháp.",
+      upgradeHref,
+      "Nâng cấp ngay",
+    );
+  }
+
+  async function loadStatus() {
+    const cachedUser = readMeCache();
+
+    if (cachedUser) {
+      applyUserToStatus(cachedUser);
+    }
+
+    try {
+      const res = await fetch(`${api}/me`, {
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+        },
+        cache: "no-store",
+      });
+
+      if (!res.ok) {
+        if (res.status === 401 || res.status === 403) {
+          clearMeCache();
+          applyGuestState();
+          return;
+        }
+
+        if (cachedUser) {
+          showNetworkNote(
+            "Không cập nhật được dữ liệu mới. Đang hiển thị trạng thái gần nhất.",
+          );
+          return;
+        }
+
+        applyGuestState();
+        return;
+      }
+
+      const data = await res.json();
+
+      if (!data?.user) {
+        clearMeCache();
+        applyGuestState();
+        return;
+      }
+
+      writeMeCache(data.user);
+      applyUserToStatus(data.user);
+    } catch (e) {
+      console.error("status error", e);
+
+      if (cachedUser) {
+        showNetworkNote(
+          "Không cập nhật được dữ liệu mới. Đang hiển thị trạng thái gần nhất.",
+        );
+        return;
+      }
+
+      applyGuestState();
+    }
+  }
+
+  loadStatus();
+</script>

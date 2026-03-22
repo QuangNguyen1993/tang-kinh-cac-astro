@@ -1,0 +1,96 @@
+---
+const { current = "/" } = Astro.props;
+
+const items = [
+  { href: "/", label: "Tấn An đạo trượng", icon: "♕" },
+  { href: "/upgrade", label: "Nâng Cấp Tu Vi", icon: "⚡" },
+  { href: "/noi-quy", label: "NỘI QUY", icon: "🗂" },
+  { href: "/chinh-sach", label: "Chính sách", icon: "🗺" },
+];
+---
+
+<div class="bottom-nav-wrap">
+  <nav class="bottom-nav">
+    {
+      items.map((item) => {
+        const active = current === item.href;
+        return (
+          <a
+            href={item.href}
+            class={`bottom-nav-item ${active ? "active" : ""}`}
+          >
+            <span class="bottom-nav-icon">{item.icon}</span>
+            <span class="bottom-nav-label">{item.label}</span>
+          </a>
+        );
+      })
+    }
+  </nav>
+</div>
+
+<style>
+  .bottom-nav-wrap {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    background: #111214;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .bottom-nav {
+    width: min(100%, 1280px);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    background: #111214;
+  }
+
+  .bottom-nav-item {
+    min-height: 64px;
+    padding: 8px 6px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: #bdbdbd;
+    text-decoration: none;
+    text-align: center;
+  }
+
+  .bottom-nav-item.active {
+    color: #f06a28;
+  }
+
+  .bottom-nav-icon {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .bottom-nav-label {
+    font-size: 11px;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  @media (max-width: 640px) {
+    .bottom-nav {
+      width: 100%;
+    }
+
+    .bottom-nav-item {
+      min-height: 62px;
+      padding: 8px 4px 10px;
+    }
+
+    .bottom-nav-label {
+      font-size: 10px;
+    }
+  }
+</style>
