@@ -279,8 +279,9 @@ import TopBar from "../components/TopBar.astro";
     </style>
   </head>
 
-  <body
-
+  <body>
+    <TopBar title="Tàng Kinh Các" api={API} profileHref="/upgrade" />
+    <StatusBar api={API} upgradeHref="/upgrade" />
     <main class="content">
       <section id="loadingSection" class="section">
         <div class="section-header">
